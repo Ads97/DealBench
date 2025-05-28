@@ -2,12 +2,11 @@ from typing import Any, List, Tuple
 from action import Action, ActionType
 from card import CardType, PropertyColor, PropertyCard, RentCard, BuildingCard, ActionCard, Card # etc.
 from player import Player
-
-"""https://www.buffalolib.org/sites/default/files/gaming-unplugged/inst/Monopoly%20Deal%20Card%20Game%20Instructions.pdf"""
+from deck_config import ACTIONS_PER_TURN
 
 class RulesEngine:
     @staticmethod
-    def validate_action(action: Action, current_player: Player) -> bool:
+    def validate_action(action: Action, current_player: Player, actions_played: int) -> bool:
         """Validates if a proposed action is legal according to game rules."""
         print(f"Validating Action: {action}") # Debug print
         if not action.card:
@@ -37,7 +36,7 @@ class RulesEngine:
         elif action_type == ActionType.ADD_TO_PROPERTIES: # Laying Property
             return RulesEngine._validate_add_to_properties(action)
         elif action_type == ActionType.PLAY_ACTION:
-            return RulesEngine._validate_action_card(action)
+            return RulesEngine._validate_action_card(action, actions_played)
         elif action_type == ActionType.MOVE_PROPERTY:
             return RulesEngine._validate_move_property(action)
         elif action_type == ActionType.PASS:
@@ -72,19 +71,17 @@ class RulesEngine:
         return True
     
     @staticmethod
-    def _validate_action_card(action: Action) -> bool:
+    def _validate_action_card(action: Action, actions_played: int) -> bool:
         if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_RESPONSE, CardType.ACTION_OTHER):
             return False
-        if action.target_property_set is not None:
-            return False
+        # if action.target_property_set is not None: # Why was this there?
+        #     return False
         
         match action.card.get_card_type():
             case CardType.ACTION_RENT:
-                return RulesEngine._validate_rent(action)
+                return RulesEngine._validate_rent(action, actions_played)
             case CardType.ACTION_BUILDING:
                 return RulesEngine._validate_building(action)
-            case CardType.ACTION_DOUBLE_THE_RENT:
-                return RulesEngine._validate_double_the_rent(action)
             case CardType.ACTION_RESPONSE:
                 return RulesEngine._validate_response(action)
             case CardType.ACTION_OTHER:
@@ -92,7 +89,20 @@ class RulesEngine:
         return True
 
     @staticmethod
-    def _validate_rent(action: Action) -> bool: #TODO: add validation for whether there's enough turns left to play double the rent. 
+    def _validate_rent(action: Action, actions_played: int) -> bool: #TODO: add validation for whether there's enough turns left to play double the rent. 
+        if action.double_the_rent_count > 0:
+            actual_double_the_rent_count = sum(
+                1 for c in action.source_player.hand if getattr(c, "get_card_type", lambda: None)() == CardType.ACTION_DOUBLE_THE_RENT
+            )
+            if actual_double_the_rent_count < action.double_the_rent_count:
+                print(f"Validation Error: Not enough Double the Rent cards. Found {actual_double_the_rent_count}, needed {action.double_the_rent_count}")
+                return False
+        
+        actions_needed_for_turn = 1 + action.double_the_rent_count
+        if actions_played + actions_needed_for_turn > ACTIONS_PER_TURN:
+            print(f"Validation Error: Not enough actions left in turn to play this rent. Need {actions_needed_for_turn}, have {ACTIONS_PER_TURN - actions_played}")
+            return False
+
         if action.card.is_wild:
             if len(action.target_player_names) != 1:
                 print(f"Validation Error (Rent): Wild rent card must have exactly one target player.")
@@ -119,74 +129,48 @@ class RulesEngine:
                 return False
         return True
 
-    def _validate_building(self, action: Action) -> bool:
-        card: BuildingCard = action.card
-        target_color = action.additional_details.get('target_set_color')
-        if not isinstance(target_color, PropertyColor):
-            print("Validation Error (Building): Target set color missing or invalid type.")
+    @staticmethod
+    def _validate_building(action: Action) -> bool:
+        if action.target_property_set is None:
+            print(f"Validation Error: No target property set specified for building action.")
             return False
-        if target_color in [PropertyColor.RAILROAD, PropertyColor.UTILITY]:
-            print("Validation Error (Building): Cannot build on Railroads or Utilities.")
+            
+        # Check if the player has the property set
+        player_property_sets = action.source_player.get_property_sets()
+        if action.target_property_set not in player_property_sets:
+            print(f"Validation Error: Player {action.source_player.name} does not have a {action.target_property_set} property set.")
             return False
-
-        player_state = self.game_state.players[action.source_player.name]
-        properties = player_state.properties
-        if target_color not in properties:
-            print(f"Validation Error (Building): Player does not have any {target_color} properties.")
+            
+        target_set = player_property_sets[action.target_property_set]
+        building_type = action.card.building_type
+        
+        # Check if the set is a full set
+        if not target_set.is_full_set:
+            print(f"Validation Error: Cannot add {building_type} to incomplete property set {action.target_property_set}.")
             return False
-
-        set_data = properties[target_color]
-        # Check for completed set
-        if not self.is_set_complete(player_state, target_color):
-             print(f"Validation Error (Building): Set {target_color} is not complete.")
-             return False
-
-        # Check building-specific rules (House/Hotel placement)
-        # This logic was previously in the card itself, now moved here.
-        if card.building_type == 'house':
-            has_house = set_data.get('houses', 0) > 0
-            if has_house:
-                print(f"Validation Error (House): Set {target_color} already has a house.")
+            
+        # Check if the set can have buildings (no buildings on railroads or utilities)
+        if action.target_property_set in [PropertyColor.RAILROAD, PropertyColor.UTILITY]:
+            print(f"Validation Error: Cannot add buildings to {action.target_property_set} properties.")
+            return False
+            
+        # Check building-specific rules
+        if building_type == "house":
+            if target_set.has_house or target_set.has_hotel:
+                print(f"Validation Error: Property set {action.target_property_set} already has a house or hotel.")
                 return False
-        elif card.building_type == 'hotel':
-            has_house = set_data.get('houses', 0) > 0
-            has_hotel = set_data.get('hotels', 0) > 0
-            if not has_house:
-                 print(f"Validation Error (Hotel): Set {target_color} needs a house first.")
-                 return False
-            if has_hotel:
-                 print(f"Validation Error (Hotel): Set {target_color} already has a hotel.")
-                 return False
-
+        elif building_type == "hotel":
+            if not target_set.has_house:
+                print(f"Validation Error: Cannot add a hotel to {action.target_property_set} without a house.")
+                return False
+            if target_set.has_hotel:
+                print(f"Validation Error: Property set {action.target_property_set} already has a hotel.")
+                return False
+        else:
+            print(f"Validation Error: Unknown building type: {building_type}")
+            return False
+            
         return True
-        
-        
-    
-    def is_set_complete(self, player: Player, color: PropertyColor) -> bool:
-        """Checks if the player has a complete set of the given color."""
-        color_key = color.name
-        if color_key not in player['properties']:
-            return False
-
-        set_data = player['properties'][color_key]
-        cards_in_set = set_data['cards']
-        if not cards_in_set:
-            return False
-
-        # Find the required number (tricky with only wildcards)
-        required_count = 0
-        for card in cards_in_set:
-            if isinstance(card, PropertyCard) and not isinstance(card, WildPropertyCard):
-                required_count = card.properties_in_set
-                break
-        # If only wildcards, need a way to know required count (maybe store on set_data?)
-        if required_count == 0:
-             print(f"Warning: Cannot determine required count for set {color_key} (only wildcards?). Needs refinement.")
-             # TODO: How to handle sets made purely of wildcards?
-             # For now, assume requires looking up from config based on color.
-             return False # Cannot determine completion yet
-
-        return len(cards_in_set) >= required_count
     
     @staticmethod
     def check_win_condition(player: Player) -> bool:

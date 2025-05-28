@@ -1,7 +1,7 @@
-from typing import List, Optional, Any
-from card import Card, PropertyCard, WildPropertyCard
+from typing import List, Optional
+from card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor
 from player import Player 
-
+from dataclasses import dataclass
 from enum import Enum, auto
 
 class ActionType(Enum):
@@ -13,11 +13,6 @@ class ActionType(Enum):
     MOVE_PROPERTY = auto()         # Moving a property card to a different set. Does not count as an action
     PASS = auto()                  # Passing turn
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Union
-from enum import Enum
-from card import Card, PropertyColor, CardType # Added CardType
-from player import Player
 
 @dataclass
 class Action:
@@ -42,6 +37,8 @@ class Action:
                 self.target_property_set = target_property_set
             elif isinstance(card, PropertyCard):
                 self.target_property_set = card.set_color
+        else:
+            self.target_property_set = target_property_set
         self.rent_color = rent_color
 
 
@@ -63,5 +60,8 @@ class Action:
     
         if self.rent_color:
             components.append(f"rent_color={self.rent_color.name}")
+        
+        if self.double_the_rent_count:
+            components.append(f"double_the_rent_count={self.double_the_rent_count}")
     
         return f"<{', '.join(components)}>"

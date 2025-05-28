@@ -41,6 +41,13 @@ class Player(ABC): # Inherit from ABC
     def remove_card_from_hand(self, card):
         """Removes a specific card from the player's hand."""
         self.hand.remove(card)
+    
+    def remove_double_rent_card_from_hand(self):
+        for card in self.hand:
+            if card.get_card_type() == CardType.ACTION_DOUBLE_THE_RENT:
+                self.hand.remove(card)
+                return
+        raise ValueError("No double the rent card found in hand.")
 
     def add_card_to_bank(self, card):
         """Adds a card (Money or Action) to the player's bank."""
@@ -53,13 +60,14 @@ class Player(ABC): # Inherit from ABC
         except ValueError:
             print(f"Error: Card {card} not found in bank.") # Or raise a custom exception
 
-    def add_card_to_properties(self, card):
-        if isinstance(card, WildPropertyCard):
-            color = card.current_color
-        elif isinstance(card, PropertyCard):
-            color = card.set_color
-        else:
-            raise ValueError(f"Error: Card {card} is not a PropertyCard.")
+    def add_card_to_properties(self, card, color = None):
+        if color is None:
+            if isinstance(card, WildPropertyCard):
+                color = card.current_color
+            elif isinstance(card, PropertyCard):
+                color = card.set_color
+            else:
+                raise ValueError(f"add_card_to_properties: Error: color is None for card {card}")
         if color not in self.property_sets:
             self.property_sets[color] = PropertySet(card)
         else:

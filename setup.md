@@ -61,3 +61,7 @@ Classes to have:
 5. Action - action type (add_to_bank, play_action_card, add_to_properties, discard), which card, source player, target player
 6. Rules - given game state, source player, action, decides if it is a valid move. 
 7. 
+
+
+Sources:
+https://www.buffalolib.org/sites/default/files/gaming-unplugged/inst/Monopoly%20Deal%20Card%20Game%20Instructions.pdf

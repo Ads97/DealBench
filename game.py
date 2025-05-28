@@ -2,7 +2,7 @@ import random
 from typing import List, Optional, Dict, Any
 from deck import Deck
 from player import Player
-from card import Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType
+from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor
 from action import Action, ActionType
 from rules_engine import RulesEngine
 import random 
@@ -177,10 +177,12 @@ class Game:
         player = action.source_player
         card = action.card
         
-        # Remove from hand and add to properties
         if isinstance(card, WildPropertyCard):
             card.current_color = action.target_property_set
-        player.add_card_to_properties(card)
+        if isinstance(card, PropertyCard):
+            player.add_card_to_properties(card)
+        elif isinstance(card, BuildingCard):
+            player.add_card_to_properties(card, action.target_property_set)
         print(f"{player.name} added property {card.name} to {action.target_property_set}")
     
     def _execute_move_property(self, action: Action):
@@ -202,9 +204,20 @@ class Game:
         match action.card.get_card_type():
             case CardType.ACTION_RENT:
                 self._execute_action_rent(action)
+            case CardType.ACTION_BUILDING:
+                self._execute_add_to_properties(action)
             case _:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
+    def _get_money_from(self, source_player: Player, target_player: Player, amount: int, reason: str):
+        payment_cards = target_player.provide_payment(reason=reason,amount=amount)
+        while not self.rules_engine.validate_rent_payment(payment_cards):
+            payment_cards = target_player.provide_payment(reason=reason,amount=amount)
+        print(f"{target_player.name} paid {amount}M to {source_player.name} with cards {payment_cards} for {reason}.")
+        for card, source in payment_cards:
+            source_player.add_card(card, source)
+            target_player.remove_card(card, source)
+
     def _execute_action_rent(self, action: Action): #TODO: handle double the rent
         """Handle playing a rent card."""
         player = action.source_player
@@ -213,30 +226,19 @@ class Game:
         rent_value = property_sets[action.rent_color].get_rent_value()
         if action.double_the_rent_count:
             rent_value = rent_value * 2**action.double_the_rent_count
+            player.remove_double_rent_card_from_hand()
         
         # Charge rent to other players
         if not card.is_wild:
             for other_player in self._get_all_players():
                 if other_player != player:
-                    payment_cards = other_player.provide_payment(reason="rent",amount=rent_value)
-                    while not self.rules_engine.validate_rent_payment(payment_cards):
-                        payment_cards = other_player.provide_payment(reason="rent",amount=rent_value)
-                    print(f"{other_player.name} paid {rent_value}M to {player.name} with cards {payment_cards} for rent.")
-                    for card, source in payment_cards:
-                        player.add_card(card, source)
-                        other_player.remove_card(card, source)
+                    self._get_money_from(player, other_player, rent_value, "rent")
         else:
             target_player_name = action.target_player_names[0]
             target_player = self._get_player_by_name(target_player_name)
             if target_player is None:
                 raise ValueError(f"Target player {target_player_name} not found.")
-            payment_cards = target_player.provide_payment(reason="rent",amount=rent_value)
-            while not self.rules_engine.validate_rent_payment(payment_cards):
-                payment_cards = target_player.provide_payment(reason="rent",amount=rent_value)
-            print(f"{target_player.name} paid {rent_value}M to {player.name} with cards {payment_cards} for rent.")
-            for card, source in payment_cards:
-                player.add_card(card, source)
-                target_player.remove_card(card, source)
+            self._get_money_from(player, target_player, rent_value, "rent")
 
 class TestPlayer(Player):
     def get_action(self, game_state_dict: dict) -> Optional[Action]:
@@ -284,6 +286,26 @@ class TestPlayer(Player):
                     Action(source_player=self, card=card,
                         action_type=ActionType.ADD_TO_BANK)
                 )
+            
+            elif isinstance(card, BuildingCard):
+                full_sets = [(color, property_set) for color, property_set in property_sets.items() if property_set.is_full_set]
+                if full_sets:
+                    if card.building_type == "house":
+                        for color, property_set in full_sets:
+                            if not (property_set.has_house or color in (PropertyColor.RAILROAD, PropertyColor.UTILITY)):
+                                valid_actions.append(
+                                    Action(source_player=self, card=card,
+                                        action_type=ActionType.PLAY_ACTION,
+                                        target_property_set=color)
+                                )
+                    elif card.building_type == "hotel":
+                        for color, property_set in full_sets:
+                            if property_set.has_house and not property_set.has_hotel:
+                                valid_actions.append(
+                                    Action(source_player=self, card=card,
+                                        action_type=ActionType.PLAY_ACTION,
+                                        target_property_set=color)
+                                )
 
             # --- Rent card ------------------------------------------------------
             elif isinstance(card, RentCard) and my_property_colors:

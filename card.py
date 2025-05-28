@@ -258,6 +258,15 @@ class PropertySet():
             if self.number_for_full_set == 0:
                 self.number_for_full_set = card.properties_in_set
             self.cards.append(card)
+        elif isinstance(card, BuildingCard):
+            if card.building_type == "house":
+                self.has_house = True
+            elif card.building_type == "hotel" and self.has_house:
+                self.has_hotel = True
+            else:
+                raise ValueError(f"Could not add building card {card} to property set {self.set_color}. Perhaps you're trying to add a hotel before a house?")
+        else:
+            raise ValueError(f"Card {card} is not a PropertyCard or BuildingCard.")
 
     def remove_card(self, card_to_remove: Card):
         """Removes a specific card from the set."""

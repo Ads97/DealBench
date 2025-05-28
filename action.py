@@ -27,7 +27,7 @@ class Action:
         source_player: Player, 
         card: Optional[Card] = None, # Card object being played
         target_player_names: Optional[List[str]] = None, # List of Player names, if applicable
-        target_property_set: Optional[PropertyColor] = None, # TODO: Why is this needed?
+        target_property_set: Optional[PropertyColor] = None,
         rent_color: Optional[PropertyColor] = None,
         double_the_rent_count: Optional[int] = 0):
         """Represents a game action taken by a player."""

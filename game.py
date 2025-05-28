@@ -7,12 +7,8 @@ from action import Action, ActionType
 from rules_engine import RulesEngine
 import random 
 import sys
-import json 
-
-INITIAL_HAND_SIZE = 5
-MAX_HAND_SIZE = 7
-ACTIONS_PER_TURN = 3
-DRAWS_PER_TURN = 2
+import json
+from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -81,10 +77,10 @@ class Game:
             player.add_card_to_hand(card)
         
         # now play up to 3 actions
-        actions_played = 0
-        while actions_played < ACTIONS_PER_TURN:
+        self.actions_played = 0
+        while self.actions_played < ACTIONS_PER_TURN:
             # TODO: Display game state to player (hand, properties, bank etc.)
-            print(f"{player.name} has played {actions_played}/{ACTIONS_PER_TURN} actions.")
+            print(f"{player.name} has played {self.actions_played}/{ACTIONS_PER_TURN} actions.")
 
             # Get action from player
             action: Action = player.get_action(self.to_json())
@@ -94,10 +90,10 @@ class Game:
                 break
 
             # Validate and Execute Action
-            if self.rules_engine.validate_action(action, player):
+            if self.rules_engine.validate_action(action, player, self.actions_played):
                 self.execute(action)
                 if action.action_type != ActionType.MOVE_PROPERTY:
-                    actions_played += 1 # Move property does not count as an action
+                    self.actions_played += 1 # Move property does not count as an action
                 print(f"Action successful: {action}")
                 # Check win condition immediately if action could cause win (e.g. placing last property)
                 has_won = self.rules_engine.check_win_condition(player)
@@ -123,10 +119,13 @@ class Game:
 
     def to_json(self, debug=False) -> Dict[str, Any]:
         """Exposes all the game state that a player should have access to."""
-        return {
+        json_state = {
             "current_player_name": self._get_current_player().name,
+            "turns_completed_in_game": self.turn_count,
+            "actions_played_in_current_turn": self.actions_played,
             "players": [player.to_json(debug) for player in self.players],
         }
+        return json_state
 
     def _get_player_by_name(self, name: str) -> Optional[Player]:
         """Finds the Player object corresponding to a name."""
@@ -255,6 +254,7 @@ class TestPlayer(Player):
         double_the_rent_count = sum(
             1 for c in self.hand if getattr(c, "get_card_type", lambda: None)() == CardType.ACTION_DOUBLE_THE_RENT
         )
+        double_the_rent_count = min(double_the_rent_count, ACTIONS_PER_TURN -game_state_dict['actions_played_in_current_turn'] - 1)
 
         for card in self.hand:
 

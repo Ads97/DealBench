@@ -115,3 +115,8 @@ print(f"Total cards configured: {total_cards}")
 EXPECTED_TOTAL = 106
 if total_cards != EXPECTED_TOTAL:
     print(f"WARNING: Configured card count ({total_cards}) does not match expected ({EXPECTED_TOTAL})!")
+
+INITIAL_HAND_SIZE = 5
+MAX_HAND_SIZE = 7
+ACTIONS_PER_TURN = 3
+DRAWS_PER_TURN = 2

@@ -96,14 +96,14 @@ DECK_CONFIGURATION = [
 
     # Other Action Cards (Gameplay logic handled elsewhere based on type/name)
     {'type': CardType.ACTION_DOUBLE_THE_RENT, 'card_class': 'DoubleTheRentCard', 'name': "Double The Rent", 'value': 1, 'count': 2},#correct
-    {'type': CardType.ACTION_RESPONSE, 'card_class': 'JustSayNoCard', 'name': "Just Say No!", 'value': 4, 'count': 3},#correct
+    {'type': CardType.ACTION_JUST_SAY_NO, 'card_class': 'JustSayNoCard', 'name': "Just Say No!", 'value': 4, 'count': 3},#correct
 
     {'type': CardType.ACTION_OTHER, 'action_name': 'DealBreaker', 'name': "Deal Breaker", 'value': 5, 'count': 2},#correct
     {'type': CardType.ACTION_OTHER, 'action_name': 'SlyDeal', 'name': "Sly Deal", 'value': 3, 'count': 3},#correct
     {'type': CardType.ACTION_OTHER, 'action_name': 'ForcedDeal', 'name': "Forced Deal", 'value': 3, 'count': 4},#correct
     {'type': CardType.ACTION_OTHER, 'action_name': 'DebtCollector', 'name': "Debt Collector", 'value': 3, 'count': 3},#correct
     {'type': CardType.ACTION_OTHER, 'action_name': 'ItsMyBirthday', 'name': "It's My Birthday!", 'value': 2, 'count': 3},#correct
-    {'type': CardType.ACTION_OTHER, 'action_name': 'Pass Go', 'name': "Pass Go", 'value': 1, 'count': 10} #correct
+    {'type': CardType.ACTION_PASS_GO, 'card_class': 'PassGoCard', 'action_name': 'Pass Go', 'name': "Pass Go", 'value': 1, 'count': 10} #correct
 ]
 
 # --- Sanity Check: Total Card Count ---
@@ -120,3 +120,4 @@ INITIAL_HAND_SIZE = 5
 MAX_HAND_SIZE = 7
 ACTIONS_PER_TURN = 3
 DRAWS_PER_TURN = 2
+PASS_GO_DRAW_COUNT = 2

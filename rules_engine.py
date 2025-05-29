@@ -13,17 +13,14 @@ class RulesEngine:
             return False
 
         if action.source_player != current_player:
-            # Allow JustSayNo validation even out of turn?
-            if action.card.get_card_type() != CardType.ACTION_RESPONSE:
-                 print(f"Validation Error: Not {action.source_player.name}'s turn.")
-                 return False
+            return False
 
         # Check if player has the card (unless it's a context action like passing)
         if action.card not in action.source_player.hand:
             print(f"Validation Error: {action.source_player.name} does not have {action.card.name}")
             return False
         
-        if action.action_type!=ActionType.PLAY_ACTION and action.card.get_card_type() != CardType.ACTION_RENT:
+        if not (action.action_type==ActionType.PLAY_ACTION and action.card.get_card_type() == CardType.ACTION_RENT):
             if action.double_the_rent_count > 0:
                 print(f"Validation Error: Double the Rent can only be used with Rent cards. Found {action.card.name} with double the rent count {action.double_the_rent_count}")
                 return False
@@ -72,7 +69,7 @@ class RulesEngine:
     
     @staticmethod
     def _validate_action_card(action: Action, actions_played: int) -> bool:
-        if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_RESPONSE, CardType.ACTION_OTHER):
+        if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_JUST_SAY_NO, CardType.ACTION_PASS_GO, CardType.ACTION_OTHER):
             return False
         # if action.target_property_set is not None: # Why was this there?
         #     return False
@@ -82,8 +79,10 @@ class RulesEngine:
                 return RulesEngine._validate_rent(action, actions_played)
             case CardType.ACTION_BUILDING:
                 return RulesEngine._validate_building(action)
-            case CardType.ACTION_RESPONSE:
-                return RulesEngine._validate_response(action)
+            case CardType.ACTION_PASS_GO:
+                return RulesEngine._validate_pass_go(action)
+            case CardType.ACTION_JUST_SAY_NO:
+                return RulesEngine._validate_just_say_no(action)
             case CardType.ACTION_OTHER:
                 return RulesEngine._validate_other(action)
         return True
@@ -172,6 +171,25 @@ class RulesEngine:
             
         return True
     
+    @staticmethod
+    def validate_move_property(action: Action) -> bool:
+        #TODO: Handle move building too (you'll have to reset flags)
+        pass
+
+    @staticmethod
+    def _validate_pass_go(action: Action) -> bool:
+        if len(action.target_player_names) > 0:
+            print(f"Validation Error: Pass Go cannot have target players. {action}")
+            return False
+        if action.target_property_set is not None:
+            print(f"Validation Error: Pass Go cannot have target property set. {action}")
+            return False
+        if action.rent_color is not None:
+            print(f"Validation Error: Pass Go cannot have rent color. {action}")
+            return False
+        return True
+        
+
     @staticmethod
     def check_win_condition(player: Player) -> bool:
         """Checks if any player has met the win condition (3 full sets)."""

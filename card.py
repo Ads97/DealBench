@@ -12,8 +12,9 @@ class CardType(Enum):
     ACTION_RENT = auto()
     ACTION_BUILDING = auto()
     ACTION_DOUBLE_THE_RENT = auto() # e.g., Double the Rent
-    ACTION_RESPONSE = auto() # e.g., Just Say No
+    ACTION_JUST_SAY_NO = auto() # e.g., Just Say No
     ACTION_OTHER = auto() # For other specific actions like Deal Breaker etc.
+    ACTION_PASS_GO = auto()
 
 class PropertyColor(Enum):
     BROWN = auto()
@@ -232,7 +233,12 @@ class DoubleTheRentCard(ActionCard):
 class JustSayNoCard(ActionCard):
     """Action card to cancel an action targeting the player."""
     def get_card_type(self) -> CardType:
-        return CardType.ACTION_RESPONSE
+        return CardType.ACTION_JUST_SAY_NO
+
+class PassGoCard(ActionCard):
+    """Action card that allows the player to collect $1M from the bank."""
+    def get_card_type(self) -> CardType:
+        return CardType.ACTION_PASS_GO
 
 class PropertySet():
     def __init__(self, card: Card):

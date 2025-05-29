@@ -2,13 +2,13 @@ import random
 from typing import List, Optional, Dict, Any
 from deck import Deck
 from player import Player
-from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor
+from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard
 from action import Action, ActionType
 from rules_engine import RulesEngine
 import random 
 import sys
 import json
-from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN
+from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -187,6 +187,7 @@ class Game:
     
     def _execute_move_property(self, action: Action):
         """Handle moving a property card to a different set."""
+        #TODO: Handle move building (you'll have to reset flags). Actually there's no official rules on whether this is allowed 
         player = action.source_player
         card = action.card
         target_property_set = action.target_property_set
@@ -206,6 +207,8 @@ class Game:
                 self._execute_action_rent(action)
             case CardType.ACTION_BUILDING:
                 self._execute_add_to_properties(action)
+            case CardType.ACTION_PASS_GO:
+                self._execute_pass_go(action)
             case _:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
@@ -239,6 +242,13 @@ class Game:
             if target_player is None:
                 raise ValueError(f"Target player {target_player_name} not found.")
             self._get_money_from(player, target_player, rent_value, "rent")
+    
+    def _execute_pass_go(self, action: Action):
+        player = action.source_player
+        for _ in range(PASS_GO_DRAW_COUNT):
+            card = self.deck.draw_card()
+            player.add_card_to_hand(card)
+        print(f"{player.name} received {PASS_GO_DRAW_COUNT} cards from Pass Go. {player.name} now has {player.cards_in_hand} cards.")
 
 class TestPlayer(Player):
     def get_action(self, game_state_dict: dict) -> Optional[Action]:
@@ -330,6 +340,11 @@ class TestPlayer(Player):
                                     target_player_names=[target],
                                     double_the_rent_count=double_the_rent_count)
                             )
+            elif isinstance(card, PassGoCard):
+                valid_actions.append(
+                    Action(source_player=self, card=card,
+                        action_type=ActionType.PLAY_ACTION)
+                )
 
         # ------------------------------------------------------------------------
         # Choose and return one action (or PASS if none are legal)

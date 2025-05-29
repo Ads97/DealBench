@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict # Placeholder for Action type
 
-from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard
+from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
 
 class Player(ABC): # Inherit from ABC
     """Abstract Base Class for a player in the game."""

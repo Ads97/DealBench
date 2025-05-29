@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any
 from card import (
     Card, CardType, PropertyColor,
     MoneyCard, PropertyCard, WildPropertyCard, RentCard, BuildingCard, HouseCard, HotelCard,
-    DoubleTheRentCard, JustSayNoCard, ActionCard # Assuming other specific action cards might be needed later
+    DoubleTheRentCard, JustSayNoCard, ActionCard, PassGoCard # Assuming other specific action cards might be needed later
 )
 from deck_config import DECK_CONFIGURATION # Import the configuration
 
@@ -110,12 +110,18 @@ class Deck:
                  specific_class = DoubleTheRentCard
             else:
                  raise ValueError(f"Unknown modifier card class: {class_name}")
-        elif card_type == CardType.ACTION_RESPONSE:
+        elif card_type == CardType.ACTION_JUST_SAY_NO:
             class_name = item.get('card_class')
             if class_name == 'JustSayNoCard':
                  specific_class = JustSayNoCard
             else:
                  raise ValueError(f"Unknown response card class: {class_name}")
+        elif card_type == CardType.ACTION_PASS_GO:
+            class_name = item.get('card_class')
+            if class_name == 'PassGoCard':
+                 specific_class = PassGoCard
+            else:
+                 raise ValueError(f"Unknown pass go card class: {class_name}")
         elif card_type == CardType.ACTION_OTHER:
             # For generic actions defined only by name/value in config for now
             # We need a generic ActionCard instance, but ActionCard is ABC.

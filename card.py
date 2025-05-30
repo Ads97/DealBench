@@ -15,6 +15,11 @@ class CardType(Enum):
     ACTION_JUST_SAY_NO = auto() # e.g., Just Say No
     ACTION_OTHER = auto() # For other specific actions like Deal Breaker etc.
     ACTION_PASS_GO = auto()
+    ACTION_BIRTHDAY = auto()
+    ACTION_DEBT_COLLECTOR = auto()
+    ACTION_DEAL_BREAKER = auto()
+    ACTION_SLY_DEAL = auto()
+    ACTION_FORCED_DEAL = auto()
 
 class PropertyColor(Enum):
     BROWN = auto()
@@ -236,9 +241,34 @@ class JustSayNoCard(ActionCard):
         return CardType.ACTION_JUST_SAY_NO
 
 class PassGoCard(ActionCard):
-    """Action card that allows the player to collect $1M from the bank."""
+    """Action card that allows the player to collect 2 extra cards from the deck."""
     def get_card_type(self) -> CardType:
         return CardType.ACTION_PASS_GO
+
+class ItsMyBirthdayCard(ActionCard):
+    """Action card that allows the player to collect $2M from the bank."""
+    def get_card_type(self) -> CardType:
+        return CardType.ACTION_BIRTHDAY
+
+class DebtCollectorCard(ActionCard):
+    """Action card that allows the player to collect $2M from the bank."""
+    def get_card_type(self) -> CardType:
+        return CardType.ACTION_DEBT_COLLECTOR
+
+class DealBreakerCard(ActionCard):
+    """Action card that allows the player to collect $2M from the bank."""
+    def get_card_type(self) -> CardType:
+        return CardType.ACTION_DEAL_BREAKER
+
+class SlyDealCard(ActionCard):
+    """Action card that allows the player to collect $2M from the bank."""
+    def get_card_type(self) -> CardType:
+        return CardType.ACTION_SLY_DEAL
+
+class ForcedDealCard(ActionCard):
+    """Action card that allows the player to collect $2M from the bank."""
+    def get_card_type(self) -> CardType:
+        return CardType.ACTION_FORCED_DEAL
 
 class PropertySet():
     def __init__(self, card: Card):

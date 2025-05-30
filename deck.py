@@ -5,7 +5,8 @@ from typing import List, Optional, Dict, Any
 from card import (
     Card, CardType, PropertyColor,
     MoneyCard, PropertyCard, WildPropertyCard, RentCard, BuildingCard, HouseCard, HotelCard,
-    DoubleTheRentCard, JustSayNoCard, ActionCard, PassGoCard # Assuming other specific action cards might be needed later
+    DoubleTheRentCard, JustSayNoCard, ActionCard, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard,
+    SlyDealCard, ForcedDealCard, DealBreakerCard
 )
 from deck_config import DECK_CONFIGURATION # Import the configuration
 
@@ -122,6 +123,36 @@ class Deck:
                  specific_class = PassGoCard
             else:
                  raise ValueError(f"Unknown pass go card class: {class_name}")
+        elif card_type == CardType.ACTION_BIRTHDAY:
+            class_name = item.get('card_class')
+            if class_name == 'ItsMyBirthdayCard':
+                 specific_class = ItsMyBirthdayCard
+            else:
+                 raise ValueError(f"Unknown birthday card class: {class_name}")
+        elif card_type == CardType.ACTION_DEBT_COLLECTOR:
+            class_name = item.get('card_class')
+            if class_name == 'DebtCollectorCard':
+                 specific_class = DebtCollectorCard
+            else:
+                 raise ValueError(f"Unknown debt collector card class: {class_name}")
+        elif card_type == CardType.ACTION_SLY_DEAL:
+            class_name = item.get('card_class')
+            if class_name == 'SlyDealCard':
+                 specific_class = SlyDealCard
+            else:
+                 raise ValueError(f"Unknown sly deal card class: {class_name}")
+        elif card_type == CardType.ACTION_FORCED_DEAL:
+            class_name = item.get('card_class')
+            if class_name == 'ForcedDealCard':
+                 specific_class = ForcedDealCard
+            else:
+                 raise ValueError(f"Unknown forced deal card class: {class_name}")
+        elif card_type == CardType.ACTION_DEAL_BREAKER:
+            class_name = item.get('card_class')
+            if class_name == 'DealBreakerCard':
+                 specific_class = DealBreakerCard
+            else:
+                 raise ValueError(f"Unknown deal breaker card class: {class_name}")
         elif card_type == CardType.ACTION_OTHER:
             # For generic actions defined only by name/value in config for now
             # We need a generic ActionCard instance, but ActionCard is ABC.

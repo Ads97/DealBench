@@ -24,7 +24,8 @@ class Action:
         target_player_names: Optional[List[str]] = None, # List of Player names, if applicable
         target_property_set: Optional[PropertyColor] = None,
         rent_color: Optional[PropertyColor] = None,
-        double_the_rent_count: Optional[int] = 0):
+        double_the_rent_count: Optional[int] = 0,
+        sly_deal_property: Optional[PropertyCard] = None):
         """Represents a game action taken by a player."""
         self.action_type = action_type
         self.source_player = source_player
@@ -40,7 +41,7 @@ class Action:
         else:
             self.target_property_set = target_property_set
         self.rent_color = rent_color
-
+        self.sly_deal_property = sly_deal_property
 
     def __repr__(self) -> str:
         """Return a detailed string representation of the Action."""
@@ -63,5 +64,8 @@ class Action:
         
         if self.double_the_rent_count:
             components.append(f"double_the_rent_count={self.double_the_rent_count}")
+        
+        if self.sly_deal_property:
+            components.append(f"sly_deal_property={self.sly_deal_property.name}")
     
         return f"<{', '.join(components)}>"

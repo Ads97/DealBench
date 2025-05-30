@@ -69,10 +69,8 @@ class RulesEngine:
     
     @staticmethod
     def _validate_action_card(action: Action, actions_played: int) -> bool:
-        if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_JUST_SAY_NO, CardType.ACTION_PASS_GO, CardType.ACTION_OTHER):
+        if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_JUST_SAY_NO, CardType.ACTION_PASS_GO, CardType.ACTION_OTHER, CardType.ACTION_BIRTHDAY, CardType.ACTION_DEBT_COLLECTOR):
             return False
-        # if action.target_property_set is not None: # Why was this there?
-        #     return False
         
         match action.card.get_card_type():
             case CardType.ACTION_RENT:
@@ -81,10 +79,14 @@ class RulesEngine:
                 return RulesEngine._validate_building(action)
             case CardType.ACTION_PASS_GO:
                 return RulesEngine._validate_pass_go(action)
+            case CardType.ACTION_BIRTHDAY:
+                return RulesEngine._validate_birthday(action)
             case CardType.ACTION_JUST_SAY_NO:
                 return RulesEngine._validate_just_say_no(action)
             case CardType.ACTION_OTHER:
                 return RulesEngine._validate_other(action)
+            case CardType.ACTION_DEBT_COLLECTOR:
+                return RulesEngine._validate_debt_collector(action)
         return True
 
     @staticmethod
@@ -166,14 +168,14 @@ class RulesEngine:
                 print(f"Validation Error: Property set {action.target_property_set} already has a hotel.")
                 return False
         else:
-            print(f"Validation Error: Unknown building type: {building_type}")
+            print(f"Validation Error: Unknown building type: m{building_type}")
             return False
             
         return True
     
     @staticmethod
     def validate_move_property(action: Action) -> bool:
-        #TODO: Handle move building too (you'll have to reset flags)
+        #TODO: Handle move building - throw an error and say ambiguous but not supported 
         pass
 
     @staticmethod
@@ -186,6 +188,32 @@ class RulesEngine:
             return False
         if action.rent_color is not None:
             print(f"Validation Error: Pass Go cannot have rent color. {action}")
+            return False
+        return True
+    
+    @staticmethod
+    def _validate_birthday(action: Action) -> bool:
+        if len(action.target_player_names) > 0:
+            print(f"Validation Error: Birthday cannot have target players. {action}")
+            return False
+        if action.target_property_set is not None:
+            print(f"Validation Error: Birthday cannot have target property set. {action}")
+            return False
+        if action.rent_color is not None:
+            print(f"Validation Error: Birthday cannot have rent color. {action}")
+            return False
+        return True
+    
+    @staticmethod
+    def _validate_debt_collector(action: Action) -> bool:
+        if len(action.target_player_names) != 1:
+            print(f"Validation Error: Debt Collector must have exactly one target player. Found {action}")
+            return False
+        if action.target_property_set is not None:
+            print(f"Validation Error: Debt Collector cannot have target property set. {action}")
+            return False
+        if action.rent_color is not None:
+            print(f"Validation Error: Debt Collector cannot have rent color. {action}")
             return False
         return True
         

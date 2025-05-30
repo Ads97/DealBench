@@ -2,13 +2,13 @@ import random
 from typing import List, Optional, Dict, Any
 from deck import Deck
 from player import Player
-from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard
+from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard
 from action import Action, ActionType
 from rules_engine import RulesEngine
 import random 
 import sys
 import json
-from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT
+from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -209,14 +209,20 @@ class Game:
                 self._execute_add_to_properties(action)
             case CardType.ACTION_PASS_GO:
                 self._execute_pass_go(action)
+            case CardType.ACTION_BIRTHDAY:
+                self._execute_its_my_birthday(action)
+            case CardType.ACTION_DEBT_COLLECTOR:
+                self._execute_debt_collector(action)
             case _:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
     def _get_money_from(self, source_player: Player, target_player: Player, amount: int, reason: str):
         payment_cards = target_player.provide_payment(reason=reason,amount=amount)
+        actual_amount_paid = sum(card.value for card, _ in payment_cards)
         while not self.rules_engine.validate_rent_payment(payment_cards):
             payment_cards = target_player.provide_payment(reason=reason,amount=amount)
-        print(f"{target_player.name} paid {amount}M to {source_player.name} with cards {payment_cards} for {reason}.")
+            actual_amount_paid = sum(card.value for card, _ in payment_cards)
+        print(f"{target_player.name} paid {actual_amount_paid}M ({amount}M requested) to {source_player.name} with cards {payment_cards} for {reason}.")
         for card, source in payment_cards:
             source_player.add_card(card, source)
             target_player.remove_card(card, source)
@@ -249,6 +255,20 @@ class Game:
             card = self.deck.draw_card()
             player.add_card_to_hand(card)
         print(f"{player.name} received {PASS_GO_DRAW_COUNT} cards from Pass Go. {player.name} now has {player.cards_in_hand} cards.")
+
+    def _execute_its_my_birthday(self, action: Action):
+        player = action.source_player
+        for other_player in self._get_all_players():
+            if other_player != player:
+                self._get_money_from(player, other_player, BIRTHDAY_GIFT_AMOUNT, "birthday")
+    
+    def _execute_debt_collector(self, action: Action):
+        player = action.source_player
+        target_player_name = action.target_player_names[0]
+        target_player = self._get_player_by_name(target_player_name)
+        if target_player is None:
+            raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        self._get_money_from(player, target_player, DEBT_COLLECTOR_AMOUNT, "debt collection")
 
 class TestPlayer(Player):
     def get_action(self, game_state_dict: dict) -> Optional[Action]:
@@ -292,10 +312,11 @@ class TestPlayer(Player):
                     Action(source_player=self, card=card,
                         action_type=ActionType.ADD_TO_PROPERTIES)
                 )
-                valid_actions.append(
-                    Action(source_player=self, card=card,
-                        action_type=ActionType.ADD_TO_BANK)
-                )
+                if random.random() < 0.2:
+                    valid_actions.append(
+                        Action(source_player=self, card=card,
+                            action_type=ActionType.ADD_TO_BANK)
+                    )
             
             elif isinstance(card, BuildingCard):
                 full_sets = [(color, property_set) for color, property_set in property_sets.items() if property_set.is_full_set]
@@ -343,6 +364,19 @@ class TestPlayer(Player):
             elif isinstance(card, PassGoCard):
                 valid_actions.append(
                     Action(source_player=self, card=card,
+                        action_type=ActionType.PLAY_ACTION)
+                )
+            
+            elif isinstance(card, ItsMyBirthdayCard):
+                valid_actions.append(
+                    Action(source_player=self, card=card,
+                        action_type=ActionType.PLAY_ACTION)
+                )
+            
+            elif isinstance(card, DebtCollectorCard):
+                target_player = random.choice(other_player_names)
+                valid_actions.append(
+                    Action(source_player=self, card=card,target_player_names=[target_player],
                         action_type=ActionType.PLAY_ACTION)
                 )
 

@@ -195,14 +195,13 @@ class Game:
     
     def _execute_move_property(self, action: Action):
         """Handle moving a property card to a different set."""
-        #TODO: Handle move building (you'll have to reset flags). Actually there's no official rules on whether this is allowed 
         player = action.source_player
         card = action.card
         target_property_set = action.target_property_set
         
-        # Remove from hand and add to properties
-        player.remove_card_from_properties(card)
-        player.add_card_to_properties(card)
+        # Card is already removed from the player's hand.
+        player.add_card_to_properties(card, target_property_set)
+
         print(f"{player.name} moved property {card.name} to {target_property_set}")
         return True
 
@@ -479,6 +478,8 @@ class TestPlayer(Player):
             
             elif isinstance(card, DealBreakerCard):
                 for target_player in game_state_dict['players']:
+                    if target_player['name'] == self.name:
+                        continue
                     for color, set in target_player['property_sets'].items():
                         if set['is_full_set']:
                             valid_actions.append(

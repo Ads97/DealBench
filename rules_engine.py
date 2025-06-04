@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Tuple
 from action import Action, ActionType
-from card import CardType, PropertyColor, PropertyCard, RentCard, BuildingCard, ActionCard, Card # etc.
+from card import CardType, PropertyColor, PropertyCard, RentCard, BuildingCard, ActionCard, Card, WildPropertyCard # etc.
 from player import Player
 from deck_config import ACTIONS_PER_TURN
 
@@ -182,9 +182,44 @@ class RulesEngine:
         return True
     
     @staticmethod
-    def validate_move_property(action: Action) -> bool:
-        #TODO: Handle move building - throw an error and say ambiguous but not supported 
-        pass
+    def _validate_move_property(action: Action) -> bool:
+        # No support for moving building cards
+        if action.card.get_card_type() == CardType.ACTION_BUILDING:
+            print("Validation Error: Moving buildings is not supported.")
+            return False
+
+        if len(action.target_player_names) > 0:
+            print(f"Validation Error: Move Property should not specify target players. {action}")
+            return False
+
+        if action.target_property_set is None:
+            print(f"Validation Error: Move Property must specify a target property set. {action}")
+            return False
+
+        if action.rent_color is not None or action.double_the_rent_count:
+            print(f"Validation Error: Move Property should not specify rent related fields. {action}")
+            return False
+
+        if action.card.get_card_type() != CardType.PROPERTY_WILD:
+            print(f"Validation Error: Only wild property cards can be moved. {action.card.name}")
+            return False
+
+        # Ensure the player actually owns this card in properties
+        found = False
+        for prop_set in action.source_player.get_property_sets().values():
+            if action.card in prop_set.cards:
+                found = True
+                break
+        if not found:
+            print(f"Validation Error: Player does not own property {action.card.name}.")
+            return False
+
+        if isinstance(action.card, WildPropertyCard):
+            if action.target_property_set not in action.card.available_colors:
+                print(f"Validation Error: Wild card {action.card.name} cannot represent {action.target_property_set}.")
+                return False
+
+        return True
 
     @staticmethod
     def _validate_pass_go(action: Action) -> bool:

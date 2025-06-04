@@ -94,10 +94,13 @@ class Game:
             for player_name in action.target_player_names:
                 target_players.append(self._get_player_by_name(player_name))            
             if self.rules_engine.validate_action(action, player, target_players, self.actions_played):
-                self.execute(action)
+                successfully_executed = self.execute(action)
                 if action.action_type != ActionType.MOVE_PROPERTY:
                     self.actions_played += 1 # Move property does not count as an action
-                print(f"Action successful: {action}")
+                if successfully_executed:
+                    print(f"Action successful: {action}")
+                else:
+                    print(f"Could not execute action: {action}")
                 # Check win condition immediately if action could cause win (e.g. placing last property)
                 has_won = self.rules_engine.check_win_condition(player)
                 if has_won:
@@ -141,7 +144,7 @@ class Game:
         """Placeholder to get the list of Player objects."""
         return self.players 
 
-    def execute(self, action: Action) -> None:
+    def execute(self, action: Action) -> bool:
         """Handle playing an action card."""
         # Assuming Card object has a method like is_action() or check type
         # if not self.card.is_action(): 
@@ -155,15 +158,15 @@ class Game:
 
         match action_type:
             case ActionType.ADD_TO_BANK:
-                self._execute_add_to_bank(action)
+                return self._execute_add_to_bank(action)
             case ActionType.ADD_TO_PROPERTIES:
-                self._execute_add_to_properties(action)
+                return self._execute_add_to_properties(action)
             case ActionType.MOVE_PROPERTY:
-                self._execute_move_property(action)
+                return self._execute_move_property(action)
             case ActionType.PASS:
-                self._execute_pass(action)
+                return self._execute_pass(action)
             case ActionType.PLAY_ACTION:
-                self._execute_action(action)
+                return self._execute_action(action)
             case _:
                 raise ValueError(f"Unexpected action type: {action_type}")
 
@@ -174,6 +177,7 @@ class Game:
         
         player.add_card_to_bank(card)
         print(f"{player.name} banked ${card.value}M")
+        return True
 
     def _execute_add_to_properties(self, action: Action):
         """Handle playing a standard property card to the table."""
@@ -187,6 +191,7 @@ class Game:
         elif isinstance(card, BuildingCard):
             player.add_card_to_properties(card, action.target_property_set)
         print(f"{player.name} added property {card.name} to {action.target_property_set}")
+        return True    
     
     def _execute_move_property(self, action: Action):
         """Handle moving a property card to a different set."""
@@ -199,6 +204,7 @@ class Game:
         player.remove_card_from_properties(card)
         player.add_card_to_properties(card)
         print(f"{player.name} moved property {card.name} to {target_property_set}")
+        return True
 
     def _execute_pass(self, action):
         raise ValueError("Pass action should not be executed.")
@@ -207,25 +213,28 @@ class Game:
         """Handle playing an action card."""
         match action.card.get_card_type():
             case CardType.ACTION_RENT:
-                self._execute_action_rent(action)
+                return self._execute_action_rent(action)
             case CardType.ACTION_BUILDING:
-                self._execute_add_to_properties(action)
+                return self._execute_add_to_properties(action)
             case CardType.ACTION_PASS_GO:
-                self._execute_pass_go(action)
+                return self._execute_pass_go(action)
             case CardType.ACTION_BIRTHDAY:
-                self._execute_its_my_birthday(action)
+                return self._execute_its_my_birthday(action)
             case CardType.ACTION_DEBT_COLLECTOR:
-                self._execute_debt_collector(action)
+                return self._execute_debt_collector(action)
             case CardType.ACTION_DEAL_BREAKER:
-                self._execute_deal_breaker(action)
+                return self._execute_deal_breaker(action)
             case CardType.ACTION_SLY_DEAL:
-                self._execute_sly_deal(action)
+                return self._execute_sly_deal(action)
             case CardType.ACTION_FORCED_DEAL:
-                self._execute_forced_deal(action)
+                return self._execute_forced_deal(action)
             case _:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
     def _get_money_from(self, source_player: Player, target_player: Player, amount: int, reason: str):
+        if self._attempt_just_say_no(source_player, target_player):
+            print(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
+            return False
         payment_cards = target_player.provide_payment(reason=reason,amount=amount)
         actual_amount_paid = sum(card.value for card, _ in payment_cards)
         while not self.rules_engine.validate_rent_payment(payment_cards):
@@ -235,6 +244,7 @@ class Game:
         for card, source in payment_cards:
             source_player.add_card(card, source)
             target_player.remove_card(card, source)
+        return True
 
     def _execute_action_rent(self, action: Action): #TODO: handle double the rent
         """Handle playing a rent card."""
@@ -248,15 +258,17 @@ class Game:
         
         # Charge rent to other players
         if not card.is_wild:
+            success = []
             for other_player in self._get_all_players():
                 if other_player != player:
-                    self._get_money_from(player, other_player, rent_value, "rent")
+                    success.append(self._get_money_from(player, other_player, rent_value, "rent"))
+            return any(success)
         else:
             target_player_name = action.target_player_names[0]
             target_player = self._get_player_by_name(target_player_name)
             if target_player is None:
                 raise ValueError(f"Target player {target_player_name} not found.")
-            self._get_money_from(player, target_player, rent_value, "rent")
+            return self._get_money_from(player, target_player, rent_value, "rent")
     
     def _execute_pass_go(self, action: Action):
         player = action.source_player
@@ -264,12 +276,16 @@ class Game:
             card = self.deck.draw_card()
             player.add_card_to_hand(card)
         print(f"{player.name} received {PASS_GO_DRAW_COUNT} cards from Pass Go. {player.name} now has {player.cards_in_hand} cards.")
+        return True
 
     def _execute_its_my_birthday(self, action: Action):
         player = action.source_player
+        success = []
         for other_player in self._get_all_players():
             if other_player != player:
-                self._get_money_from(player, other_player, BIRTHDAY_GIFT_AMOUNT, "birthday")
+                success.append(self._get_money_from(player, other_player, BIRTHDAY_GIFT_AMOUNT, "birthday"))
+        return any(success)
+        
     
     def _execute_debt_collector(self, action: Action):
         player = action.source_player
@@ -277,7 +293,7 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
-        self._get_money_from(player, target_player, DEBT_COLLECTOR_AMOUNT, "debt collection")
+        return self._get_money_from(player, target_player, DEBT_COLLECTOR_AMOUNT, "debt collection")
     
     def _execute_deal_breaker(self, action: Action):
         player = action.source_player
@@ -285,11 +301,14 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        if self._attempt_just_say_no(player, target_player):
+            print(f"{target_player.name} cancelled the Deal Breaker from {player.name} with Just Say No.")
+            return False
         set_color = action.target_property_set
         property_set = target_player.remove_property_set(set_color)
-        assert property_set.is_full_set
         player.add_property_set(set_color, property_set)
         print(f"{player.name} stole property set {set_color} from {target_player_name} with a deal breaker.")
+        return True
     
     def _execute_sly_deal(self, action: Action):
         player = action.source_player
@@ -297,18 +316,24 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        if self._attempt_just_say_no(player, target_player):
+            print(f"{target_player.name} cancelled the Sly Deal from {player.name} with Just Say No.")
+            return False
         stolen_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_name)
         target_player.remove_card_from_properties(stolen_card)
         player.add_card_to_properties(stolen_card)
         print(f"{player.name} stole property {stolen_card.name} from {target_player_name} with a sly deal.")
+        return True
         
-    
     def _execute_forced_deal(self, action: Action):
         player = action.source_player
         target_player_name = action.target_player_names[0]
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        if self._attempt_just_say_no(player, target_player):
+            print(f"{target_player.name} cancelled the Forced Deal from {player.name} with Just Say No.")
+            return False
         source_card = player.get_card_from_properties(action.forced_deal_source_property_name)
         target_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_name)
         player.remove_card_from_properties(source_card)
@@ -316,8 +341,30 @@ class Game:
         target_player.remove_card_from_properties(target_card)
         player.add_card_to_properties(target_card)
         print(f"{player.name} forced deal {source_card.name} to {target_player_name} and received {target_card.name}.")
-        
-        
+        return True
+
+    def _attempt_just_say_no(self, source_player: Player, target_player: Player) -> bool:
+        """Handle a possible chain of Just Say No cards.
+
+        Returns True if the pending action should be cancelled."""
+        current = target_player
+        other = source_player
+        jsn_played = False
+
+        while True:
+            jsn_action = current.wants_to_negate([other.name])
+            if jsn_action is None:
+                break
+            if self.rules_engine.validate_action(jsn_action, current, [other], None):
+                current.remove_card_from_hand(jsn_action.card)
+                print(f"{current.name} played Just Say No!")
+                jsn_played = True
+                current, other = other, current
+            else:
+                print("Invalid Just Say No action. Try again!")
+                sys.exit(1)
+
+        return jsn_played and current == source_player    
         
 
 class TestPlayer(Player):
@@ -502,6 +549,12 @@ class TestPlayer(Player):
                     if total >= amount:
                         return payment
         return payment
+    
+    def wants_to_negate(self, target_player_names: List[str]) -> Optional[Action]:
+        for card in self.hand:
+            if card.get_card_type() == CardType.ACTION_JUST_SAY_NO:
+                return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)
+        return None
         
         
 

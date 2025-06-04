@@ -1,4 +1,4 @@
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 from action import Action, ActionType
 from card import CardType, PropertyColor, PropertyCard, RentCard, BuildingCard, ActionCard, Card # etc.
 from player import Player
@@ -6,7 +6,7 @@ from deck_config import ACTIONS_PER_TURN
 
 class RulesEngine:
     @staticmethod
-    def validate_action(action: Action, current_player: Player, target_players: List[Player], actions_played: int) -> bool:
+    def validate_action(action: Action, current_player: Player, target_players: List[Player], actions_played: Optional[int]) -> bool:
         """Validates if a proposed action is legal according to game rules."""
         print(f"Validating Action: {action}") # Debug print
         if not action.card:
@@ -70,6 +70,10 @@ class RulesEngine:
     @staticmethod
     def _validate_action_card(action: Action, player: Player, target_players: List[Player], actions_played: int) -> bool:
         if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_JUST_SAY_NO, CardType.ACTION_PASS_GO, CardType.ACTION_BIRTHDAY, CardType.ACTION_DEAL_BREAKER, CardType.ACTION_SLY_DEAL, CardType.ACTION_FORCED_DEAL, CardType.ACTION_DEBT_COLLECTOR):
+            return False
+        
+        if action.source_player.name in action.target_player_names:
+            print("Validation Error: Action cards cannot target the player who played them.")
             return False
         
         match action.card.get_card_type():
@@ -294,6 +298,16 @@ class RulesEngine:
             return False
         if action.rent_color is not None:
             print(f"Validation Error: Forced Deal cannot have rent color. {action}")
+            return False
+        return True
+    
+    @staticmethod
+    def _validate_just_say_no(action: Action) -> bool:
+        if len(action.target_player_names) != 1:
+            print(f"Validation Error: Just Say No must target exactly one player. {action}")
+            return False
+        if action.target_property_set is not None or action.rent_color is not None:
+            print(f"Validation Error: Just Say No should not specify property set or rent color. {action}")
             return False
         return True
         

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Dict # Placeholder for Action type
+from typing import Any, List, Dict, Optional
 
 from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
 
@@ -178,5 +178,9 @@ class Player(ABC): # Inherit from ABC
     
     @abstractmethod
     def provide_payment(self, reason: str, amount: int) -> List[Card]:
+        pass
+
+    @abstractmethod
+    def wants_to_negate(self) -> Optional[Card]:
         pass
         

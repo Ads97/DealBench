@@ -6,7 +6,7 @@ from deck_config import ACTIONS_PER_TURN
 
 class RulesEngine:
     @staticmethod
-    def validate_action(action: Action, current_player: Player, actions_played: int) -> bool:
+    def validate_action(action: Action, current_player: Player, target_players: List[Player], actions_played: int) -> bool:
         """Validates if a proposed action is legal according to game rules."""
         print(f"Validating Action: {action}") # Debug print
         if not action.card:
@@ -33,7 +33,7 @@ class RulesEngine:
         elif action_type == ActionType.ADD_TO_PROPERTIES: # Laying Property
             return RulesEngine._validate_add_to_properties(action)
         elif action_type == ActionType.PLAY_ACTION:
-            return RulesEngine._validate_action_card(action, actions_played)
+            return RulesEngine._validate_action_card(action, current_player, target_players, actions_played)
         elif action_type == ActionType.MOVE_PROPERTY:
             return RulesEngine._validate_move_property(action)
         elif action_type == ActionType.PASS:
@@ -68,8 +68,8 @@ class RulesEngine:
         return True
     
     @staticmethod
-    def _validate_action_card(action: Action, actions_played: int) -> bool:
-        if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_JUST_SAY_NO, CardType.ACTION_PASS_GO, CardType.ACTION_OTHER, CardType.ACTION_BIRTHDAY, CardType.ACTION_DEBT_COLLECTOR):
+    def _validate_action_card(action: Action, player: Player, target_players: List[Player], actions_played: int) -> bool:
+        if action.card.get_card_type() not in (CardType.ACTION, CardType.ACTION_RENT, CardType.ACTION_BUILDING, CardType.ACTION_DOUBLE_THE_RENT, CardType.ACTION_JUST_SAY_NO, CardType.ACTION_PASS_GO, CardType.ACTION_BIRTHDAY, CardType.ACTION_DEAL_BREAKER, CardType.ACTION_SLY_DEAL, CardType.ACTION_FORCED_DEAL, CardType.ACTION_DEBT_COLLECTOR):
             return False
         
         match action.card.get_card_type():
@@ -81,10 +81,14 @@ class RulesEngine:
                 return RulesEngine._validate_pass_go(action)
             case CardType.ACTION_BIRTHDAY:
                 return RulesEngine._validate_birthday(action)
+            case CardType.ACTION_DEAL_BREAKER:
+                return RulesEngine._validate_deal_breaker(action, player, target_players)
+            case CardType.ACTION_SLY_DEAL:
+                return RulesEngine._validate_sly_deal(action, player, target_players)
+            case CardType.ACTION_FORCED_DEAL:
+                return RulesEngine._validate_forced_deal(action, player, target_players)
             case CardType.ACTION_JUST_SAY_NO:
                 return RulesEngine._validate_just_say_no(action)
-            case CardType.ACTION_OTHER:
-                return RulesEngine._validate_other(action)
             case CardType.ACTION_DEBT_COLLECTOR:
                 return RulesEngine._validate_debt_collector(action)
         return True
@@ -214,6 +218,80 @@ class RulesEngine:
             return False
         if action.rent_color is not None:
             print(f"Validation Error: Debt Collector cannot have rent color. {action}")
+            return False
+        return True
+    
+    @staticmethod
+    def _validate_deal_breaker(action: Action, player: Player, target_players: List[Player]) -> bool:
+        if len(target_players) != 1:
+            print(f"Validation Error: Deal Breaker must have exactly one target player. Found {action}")
+            return False
+        if action.target_property_set is None:
+            print(f"Validation Error: Deal Breaker must have target property set. {action}")
+            return False
+        target_property_set = target_players[0].get_property_sets().get(action.target_property_set)
+        if target_property_set is None:
+            print(f"Validation Error: Deal Breaker target property set not found. {action}")
+            return False
+        if not target_property_set.is_full_set:
+            print(f"Validation Error: Deal Breaker can only steal full set. {action}")
+            return False
+        if action.rent_color is not None:
+            print(f"Validation Error: Deal Breaker cannot have rent color. {action}")
+            return False
+        
+        return True
+    
+    @staticmethod
+    def _validate_sly_deal(action: Action, player: Player, target_players: List[Player]) -> bool:
+        if len(target_players) != 1:
+            print(f"Validation Error: Sly Deal must have exactly one target player. Found {action}")
+            return False
+        if action.target_property_set is not None:
+            print(f"Validation Error: Sly Deal should not specify target property set. {action}")
+            return False
+        if not target_players[0].has_card(action.forced_or_sly_deal_target_property_name): # TODO fix 
+            print(f"Validation Error: Sly Deal target property not found in target player. {action}")
+            return False 
+        target_property_set = None
+        for color, prop_set in target_players[0].get_property_sets().items():
+            if prop_set.has_card(action.forced_or_sly_deal_target_property_name):
+                target_property_set = prop_set
+                break
+        if target_property_set is None:
+            print(f"Validation Error: Sly Deal target property set not found. {action}")
+            return False
+        if target_property_set.is_full_set:
+            print(f"Validation Error: Sly Deal cannot steal from full set. {action}")
+            return False
+        if action.rent_color is not None:
+            print(f"Validation Error: Sly Deal cannot have rent color. {action}")
+            return False
+        return True
+    
+    @staticmethod
+    def _validate_forced_deal(action: Action, player: Player, target_players: List[Player]) -> bool:
+        if len(target_players) != 1:
+            print(f"Validation Error: Forced Deal must have exactly one target player. Found {action}")
+            return False
+        if action.target_property_set is not None:
+            print(f"Validation Error: Forced Deal should not specify target property set. {action}")
+            return False
+        target_property_set = target_players[0].get_property_sets().get(action.forced_or_sly_deal_target_property.get_color())
+        if target_property_set is None:
+            print(f"Validation Error: Forced Deal target property set not found. {action}")
+            return False
+        if target_property_set.is_full_set:
+            print(f"Validation Error: Forced Deal cannot steal from full set. {action}")
+            return False
+        if not target_players[0].has_card(action.forced_or_sly_deal_target_property):
+            print(f"Validation Error: Forced Deal target property not found in target player. {action}")
+            return False
+        if not player.has_card(action.forced_deal_source_property):
+            print(f"Validation Error: Forced Deal source property not found in source player. {action}")
+            return False
+        if action.rent_color is not None:
+            print(f"Validation Error: Forced Deal cannot have rent color. {action}")
             return False
         return True
         

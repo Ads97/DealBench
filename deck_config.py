@@ -123,3 +123,16 @@ DRAWS_PER_TURN = 2
 PASS_GO_DRAW_COUNT = 2
 BIRTHDAY_GIFT_AMOUNT = 2
 DEBT_COLLECTOR_AMOUNT = 5
+
+RENT_INFO = {
+    PropertyColor.BROWN: {'rent_values': [1, 2], 'properties_in_set': 2},
+    PropertyColor.LIGHT_BLUE: {'rent_values': [1, 2, 3], 'properties_in_set': 3},
+    PropertyColor.PINK: {'rent_values': [1, 2, 4], 'properties_in_set': 3},
+    PropertyColor.ORANGE: {'rent_values': [1, 3, 5], 'properties_in_set': 3},
+    PropertyColor.RED: {'rent_values': [2, 3, 6], 'properties_in_set': 3},
+    PropertyColor.YELLOW: {'rent_values': [2, 4, 6], 'properties_in_set': 3},
+    PropertyColor.GREEN: {'rent_values': [2, 4, 7], 'properties_in_set': 3},
+    PropertyColor.DARK_BLUE: {'rent_values': [3, 8], 'properties_in_set': 2},
+    PropertyColor.RAILROAD: {'rent_values': [1, 2, 3, 4], 'properties_in_set': 4},
+    PropertyColor.UTILITY: {'rent_values': [1, 2], 'properties_in_set': 2}
+}

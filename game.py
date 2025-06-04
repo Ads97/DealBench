@@ -2,7 +2,7 @@ import random
 from typing import List, Optional, Dict, Any
 from deck import Deck
 from player import Player
-from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard
+from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
 from action import Action, ActionType
 from rules_engine import RulesEngine
 import random 
@@ -90,7 +90,10 @@ class Game:
                 break
 
             # Validate and Execute Action
-            if self.rules_engine.validate_action(action, player, self.actions_played):
+            target_players = []
+            for player_name in action.target_player_names:
+                target_players.append(self._get_player_by_name(player_name))            
+            if self.rules_engine.validate_action(action, player, target_players, self.actions_played):
                 self.execute(action)
                 if action.action_type != ActionType.MOVE_PROPERTY:
                     self.actions_played += 1 # Move property does not count as an action
@@ -213,6 +216,12 @@ class Game:
                 self._execute_its_my_birthday(action)
             case CardType.ACTION_DEBT_COLLECTOR:
                 self._execute_debt_collector(action)
+            case CardType.ACTION_DEAL_BREAKER:
+                self._execute_deal_breaker(action)
+            case CardType.ACTION_SLY_DEAL:
+                self._execute_sly_deal(action)
+            case CardType.ACTION_FORCED_DEAL:
+                self._execute_forced_deal(action)
             case _:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
@@ -269,6 +278,44 @@ class Game:
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
         self._get_money_from(player, target_player, DEBT_COLLECTOR_AMOUNT, "debt collection")
+    
+    def _execute_deal_breaker(self, action: Action):
+        player = action.source_player
+        target_player_name = action.target_player_names[0]
+        target_player = self._get_player_by_name(target_player_name)
+        if target_player is None:
+            raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        set_color = action.target_property_set
+        property_set = target_player.remove_property_set(set_color)
+        assert property_set.is_full_set
+        player.add_property_set(set_color, property_set)
+        print(f"{player.name} stole property set {set_color} from {target_player_name} with a deal breaker.")
+    
+    def _execute_sly_deal(self, action: Action):
+        player = action.source_player
+        target_player_name = action.target_player_names[0]
+        target_player = self._get_player_by_name(target_player_name)
+        if target_player is None:
+            raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        target_player.remove_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        player.add_card_to_properties(action.forced_or_sly_deal_target_property_name)
+        print(f"{player.name} stole property {action.forced_or_sly_deal_target_property_name} from {target_player_name} with a sly deal.")
+        
+    
+    def _execute_forced_deal(self, action: Action):
+        player = action.source_player
+        target_player_name = action.target_player_names[0]
+        target_player = self._get_player_by_name(target_player_name)
+        if target_player is None:
+            raise ValueError(f"Target player {target_player_name} not found for action {action}.")
+        player.remove_card_from_properties(action.forced_deal_source_property_name)
+        target_player.add_card_to_properties(action.forced_deal_source_property_name)
+        player.add_card_to_properties(action.forced_or_sly_deal_target_property_name)
+        target_player.remove_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        print(f"{player.name} forced deal {action.forced_deal_source_property_name} to {target_player_name} and received {action.forced_or_sly_deal_target_property_name}.")
+        
+        
+        
 
 class TestPlayer(Player):
     def get_action(self, game_state_dict: dict) -> Optional[Action]:
@@ -379,6 +426,42 @@ class TestPlayer(Player):
                     Action(source_player=self, card=card,target_player_names=[target_player],
                         action_type=ActionType.PLAY_ACTION)
                 )
+            
+            elif isinstance(card, DealBreakerCard):
+                for target_player in game_state_dict['players']:
+                    for color, set in target_player['property_sets'].items():
+                        if set['is_full_set']:
+                            valid_actions.append(
+                                Action(source_player=self, card=card,target_player_names=[target_player['name']],
+                                    action_type=ActionType.PLAY_ACTION,
+                                    target_property_set=color)
+                            )
+            elif isinstance(card, SlyDealCard):
+                for target_player in game_state_dict['players']:
+                    if target_player['name'] == self.name:
+                        continue
+                    for color, set in target_player['property_sets'].items():
+                        if not set['is_full_set']:
+                            target_property = random.choice(set['cards'])['name']
+                            valid_actions.append(
+                                Action(source_player=self, card=card,target_player_names=[target_player['name']],
+                                    action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_target_property_name=target_property)
+                            )
+            elif isinstance(card, ForcedDealCard):
+                hand_properties = [p.name for p in self.hand if isinstance(p, PropertyCard)]
+                if len(hand_properties) > 0:
+                    source_property = random.choice(hand_properties)
+                    for target_player in game_state_dict['players']:
+                        if target_player['name'] == self.name:
+                            continue
+                        for color, set in target_player['property_sets'].items():
+                            if set['is_full_set']:
+                                target_property = random.choice(set['cards'])['name']
+                                valid_actions.append(
+                                    Action(source_player=self, card=card,target_player_names=[target_player['name']],
+                                        action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_source_property_name=source_property,
+                                        forced_or_sly_deal_target_property_name=target_property)
+                                )
 
         # ------------------------------------------------------------------------
         # Choose and return one action (or PASS if none are legal)

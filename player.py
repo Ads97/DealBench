@@ -85,24 +85,31 @@ class Player(ABC): # Inherit from ABC
         self.property_sets[color].remove_card(card)
         if self.property_sets[color].is_empty:
             del self.property_sets[color]
-
-    def add_building_to_property_set(self, set, building_card):
-        pass
-
-    def remove_building_from_property_set(self, set, building_card):
-        pass
+    
+    def remove_property_set(self, property_set_color):
+        return self.property_sets.pop(property_set_color)
+    
+    def add_property_set(self, property_set_color, property_set):
+        self.property_sets[property_set_color] = property_set
+    
+    def has_card(self, card_name: str):
+        #dont leak whats in player's hand
+        for card in self.bank:
+            if card.name == card_name:
+                return True
+        for prop_set in self.property_sets.values():
+            if prop_set.has_card(card_name):
+                return True
+        return False
 
     def get_bank_value(self) -> int:
         """Calculates the total monetary value of cards in the bank."""
         # Assumes cards in bank have a 'value' attribute
         return sum(card.value for card in self.bank)
 
-    def get_property_sets(self) -> List[Any]:
+    def get_property_sets(self) -> Dict[PropertyColor, PropertySet]:
         """Returns the dictionary of property sets."""
         return self.property_sets
-
-    def has_full_set(self, set_color: str) -> bool:
-        pass
 
     def to_json(self, debug=False) -> Dict[str, Any]:
         if debug:
@@ -113,7 +120,7 @@ class Player(ABC): # Inherit from ABC
             "banked_cards": [card.to_json() for card in self.bank],
             "bank_value": self.get_bank_value(),
             "property_sets": {
-                color.name: prop_set.to_json()
+                color: prop_set.to_json()
                 for color, prop_set in self.property_sets.items()
             }
         }
@@ -123,7 +130,7 @@ class Player(ABC): # Inherit from ABC
             "banked_cards": [card.to_json() for card in self.bank],
             "bank_value": self.get_bank_value(),
             "property_sets": {
-                color.name: prop_set.to_json()
+                color: prop_set.to_json()
                 for color, prop_set in self.property_sets.items()
             }
         }

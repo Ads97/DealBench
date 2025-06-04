@@ -25,7 +25,8 @@ class Action:
         target_property_set: Optional[PropertyColor] = None,
         rent_color: Optional[PropertyColor] = None,
         double_the_rent_count: Optional[int] = 0,
-        sly_deal_property: Optional[PropertyCard] = None):
+        forced_deal_source_property_name: Optional[str] = None,
+        forced_or_sly_deal_target_property_name: Optional[str] = None):
         """Represents a game action taken by a player."""
         self.action_type = action_type
         self.source_player = source_player
@@ -41,7 +42,8 @@ class Action:
         else:
             self.target_property_set = target_property_set
         self.rent_color = rent_color
-        self.sly_deal_property = sly_deal_property
+        self.forced_deal_source_property_name = forced_deal_source_property_name
+        self.forced_or_sly_deal_target_property_name = forced_or_sly_deal_target_property_name
 
     def __repr__(self) -> str:
         """Return a detailed string representation of the Action."""
@@ -57,7 +59,10 @@ class Action:
             components.append(f"targets={self.target_player_names}")
     
         if self.target_property_set:
-            components.append(f"property_set={self.target_property_set.name}")
+            try:
+                components.append(f"property_set={self.target_property_set.name}")
+            except AttributeError:
+                raise ValueError(f"Invalid property set: {components} {self.target_property_set}")
     
         if self.rent_color:
             components.append(f"rent_color={self.rent_color.name}")
@@ -65,7 +70,9 @@ class Action:
         if self.double_the_rent_count:
             components.append(f"double_the_rent_count={self.double_the_rent_count}")
         
-        if self.sly_deal_property:
-            components.append(f"sly_deal_property={self.sly_deal_property.name}")
+        if self.forced_deal_source_property_name:
+            components.append(f"forced_deal_source_property={self.forced_deal_source_property_name}")
+        if self.forced_or_sly_deal_target_property_name:
+            components.append(f"forced_or_sly_deal_target_property={self.forced_or_sly_deal_target_property_name}")
     
         return f"<{', '.join(components)}>"

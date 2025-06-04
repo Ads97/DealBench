@@ -8,7 +8,7 @@ from card import (
     DoubleTheRentCard, JustSayNoCard, ActionCard, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard,
     SlyDealCard, ForcedDealCard, DealBreakerCard
 )
-from deck_config import DECK_CONFIGURATION # Import the configuration
+from deck_config import DECK_CONFIGURATION, RENT_INFO # Import the configuration
 
 class Deck:
     """Manages the deck of undrawn cards for the game."""
@@ -46,19 +46,7 @@ class Deck:
 
     @staticmethod
     def get_rent_and_set_number(color: PropertyColor) -> List[int]:
-        rent_info = {
-        PropertyColor.BROWN: {'rent_values': [1, 2], 'properties_in_set': 2},
-        PropertyColor.LIGHT_BLUE: {'rent_values': [1, 2, 3], 'properties_in_set': 3},
-        PropertyColor.PINK: {'rent_values': [1, 2, 4], 'properties_in_set': 3},
-        PropertyColor.ORANGE: {'rent_values': [1, 3, 5], 'properties_in_set': 3},
-        PropertyColor.RED: {'rent_values': [2, 3, 6], 'properties_in_set': 3},
-        PropertyColor.YELLOW: {'rent_values': [2, 4, 6], 'properties_in_set': 3},
-        PropertyColor.GREEN: {'rent_values': [2, 4, 7], 'properties_in_set': 3},
-        PropertyColor.DARK_BLUE: {'rent_values': [3, 8], 'properties_in_set': 2},
-        PropertyColor.RAILROAD: {'rent_values': [1, 2, 3, 4], 'properties_in_set': 4},
-        PropertyColor.UTILITY: {'rent_values': [1, 2], 'properties_in_set': 2}
-    }
-        return rent_info[color]
+        return RENT_INFO[color]
     
     def _instantiate_cards(self, item: Dict[str, Any]) -> List[Card]:
         """Instantiates the correct Card object(s) based on a config dictionary."""

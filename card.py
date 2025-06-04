@@ -13,7 +13,6 @@ class CardType(Enum):
     ACTION_BUILDING = auto()
     ACTION_DOUBLE_THE_RENT = auto() # e.g., Double the Rent
     ACTION_JUST_SAY_NO = auto() # e.g., Just Say No
-    ACTION_OTHER = auto() # For other specific actions like Deal Breaker etc.
     ACTION_PASS_GO = auto()
     ACTION_BIRTHDAY = auto()
     ACTION_DEBT_COLLECTOR = auto()
@@ -108,6 +107,9 @@ class PropertyCard(Card):
             "num_properties_for_full_set": self.properties_in_set
         })
         return data
+    
+    def get_color(self) -> PropertyColor:
+        return self.set_color
 
 class WildPropertyCard(PropertyCard):
     """Represents a property wild card that can represent multiple colors."""
@@ -136,6 +138,11 @@ class WildPropertyCard(PropertyCard):
     def clear_wild_color(self):
         """Resets the color choice."""
         self.current_color = None
+    
+    def get_color(self) -> PropertyColor:
+        if self.current_color is None:
+            raise ValueError("WildPropertyCard has no color set.")
+        return self.current_color
     
     @property
     def can_use_as_money(self) -> bool:
@@ -314,6 +321,12 @@ class PropertySet():
                 self.has_hotel = False
         else:
             raise ValueError(f"Card {card_to_remove} not found in set {self.cards}")
+    
+    def has_card(self, card_name: str):
+        for card in self.cards:
+            if card.name == card_name:
+                return True
+        return False
 
     @property
     def is_full_set(self) -> bool:
@@ -399,7 +412,7 @@ class PropertySet():
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            "set_color": self.set_color.name if self.set_color else "N/A",
+            "set_color": self.set_color if self.set_color else "Wild cards",
             "cards": [card.to_json() for card in self.cards],
             "number_for_full_set": self.number_for_full_set,
             "is_full_set": self.is_full_set,

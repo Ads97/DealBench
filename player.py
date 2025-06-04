@@ -102,6 +102,14 @@ class Player(ABC): # Inherit from ABC
                 return True
         return False
 
+    def get_card_from_properties(self, card_name: str):
+        """Retrieve a property card object given its name."""
+        for prop_set in self.property_sets.values():
+            for card in prop_set.cards:
+                if card.name == card_name:
+                    return card
+        raise ValueError(f"Error: Card {card_name} not found in properties.")
+
     def get_bank_value(self) -> int:
         """Calculates the total monetary value of cards in the bank."""
         # Assumes cards in bank have a 'value' attribute

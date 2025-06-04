@@ -297,9 +297,10 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
-        target_player.remove_card_from_properties(action.forced_or_sly_deal_target_property_name)
-        player.add_card_to_properties(action.forced_or_sly_deal_target_property_name)
-        print(f"{player.name} stole property {action.forced_or_sly_deal_target_property_name} from {target_player_name} with a sly deal.")
+        stolen_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        target_player.remove_card_from_properties(stolen_card)
+        player.add_card_to_properties(stolen_card)
+        print(f"{player.name} stole property {stolen_card.name} from {target_player_name} with a sly deal.")
         
     
     def _execute_forced_deal(self, action: Action):
@@ -308,11 +309,13 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
-        player.remove_card_from_properties(action.forced_deal_source_property_name)
-        target_player.add_card_to_properties(action.forced_deal_source_property_name)
-        player.add_card_to_properties(action.forced_or_sly_deal_target_property_name)
-        target_player.remove_card_from_properties(action.forced_or_sly_deal_target_property_name)
-        print(f"{player.name} forced deal {action.forced_deal_source_property_name} to {target_player_name} and received {action.forced_or_sly_deal_target_property_name}.")
+        source_card = player.get_card_from_properties(action.forced_deal_source_property_name)
+        target_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        player.remove_card_from_properties(source_card)
+        target_player.add_card_to_properties(source_card)
+        target_player.remove_card_from_properties(target_card)
+        player.add_card_to_properties(target_card)
+        print(f"{player.name} forced deal {source_card.name} to {target_player_name} and received {target_card.name}.")
         
         
         

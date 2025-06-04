@@ -108,7 +108,7 @@ class Player(ABC): # Inherit from ABC
             for card in prop_set.cards:
                 if card.name == card_name:
                     return card
-        raise ValueError(f"Error: Card {card_name} not found in properties.")
+        return None
 
     def get_bank_value(self) -> int:
         """Calculates the total monetary value of cards in the bank."""

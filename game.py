@@ -451,18 +451,18 @@ class TestPlayer(Player):
                                     action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_target_property_name=target_property)
                             )
             elif isinstance(card, ForcedDealCard):
-                hand_properties = [p.name for p in self.hand if isinstance(p, PropertyCard)]
+                hand_properties = [card.name for prop_set in self.get_property_sets().values() for card in prop_set.cards if isinstance(card, PropertyCard)]
                 if len(hand_properties) > 0:
                     source_property = random.choice(hand_properties)
                     for target_player in game_state_dict['players']:
                         if target_player['name'] == self.name:
                             continue
                         for color, set in target_player['property_sets'].items():
-                            if set['is_full_set']:
+                            if not set['is_full_set']:
                                 target_property = random.choice(set['cards'])['name']
                                 valid_actions.append(
                                     Action(source_player=self, card=card,target_player_names=[target_player['name']],
-                                        action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_source_property_name=source_property,
+                                        action_type=ActionType.PLAY_ACTION, forced_deal_source_property_name=source_property,
                                         forced_or_sly_deal_target_property_name=target_property)
                                 )
 

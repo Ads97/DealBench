@@ -277,18 +277,20 @@ class RulesEngine:
         if action.target_property_set is not None:
             print(f"Validation Error: Forced Deal should not specify target property set. {action}")
             return False
-        target_property_set = target_players[0].get_property_sets().get(action.forced_or_sly_deal_target_property.get_color())
+        target_property_card = target_players[0].get_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        if target_property_card is None:
+            print(f"Validation Error: Forced Deal target property not found in target player. {action}")
+            return False
+        source_property_card = player.get_card_from_properties(action.forced_deal_source_property_name)
+        if source_property_card is None:
+            print(f"Validation Error: Forced Deal source property not found in source player. {action}")
+            return False
+        target_property_set = target_players[0].get_property_sets().get(target_property_card.get_color())
         if target_property_set is None:
             print(f"Validation Error: Forced Deal target property set not found. {action}")
             return False
         if target_property_set.is_full_set:
             print(f"Validation Error: Forced Deal cannot steal from full set. {action}")
-            return False
-        if not target_players[0].has_card(action.forced_or_sly_deal_target_property):
-            print(f"Validation Error: Forced Deal target property not found in target player. {action}")
-            return False
-        if not player.has_card(action.forced_deal_source_property):
-            print(f"Validation Error: Forced Deal source property not found in source player. {action}")
             return False
         if action.rent_color is not None:
             print(f"Validation Error: Forced Deal cannot have rent color. {action}")

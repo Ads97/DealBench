@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor
 from player import Player 
 from dataclasses import dataclass
@@ -25,8 +25,8 @@ class Action:
         target_property_set: Optional[PropertyColor] = None,
         rent_color: Optional[PropertyColor] = None,
         double_the_rent_count: Optional[int] = 0,
-        forced_deal_source_property_name: Optional[str] = None,
-        forced_or_sly_deal_target_property_name: Optional[str] = None):
+        forced_deal_source_property_info: Optional[Tuple[str, PropertyColor]] = None,
+        forced_or_sly_deal_target_property_info: Optional[Tuple[str, PropertyColor]] = None):
         """Represents a game action taken by a player."""
         self.action_type = action_type
         self.source_player = source_player
@@ -42,8 +42,8 @@ class Action:
         else:
             self.target_property_set = target_property_set
         self.rent_color = rent_color
-        self.forced_deal_source_property_name = forced_deal_source_property_name
-        self.forced_or_sly_deal_target_property_name = forced_or_sly_deal_target_property_name
+        self.forced_deal_source_property_info = forced_deal_source_property_info
+        self.forced_or_sly_deal_target_property_info = forced_or_sly_deal_target_property_info
 
     def __repr__(self) -> str:
         """Return a detailed string representation of the Action."""
@@ -70,9 +70,9 @@ class Action:
         if self.double_the_rent_count:
             components.append(f"double_the_rent_count={self.double_the_rent_count}")
         
-        if self.forced_deal_source_property_name:
-            components.append(f"forced_deal_source_property={self.forced_deal_source_property_name}")
-        if self.forced_or_sly_deal_target_property_name:
-            components.append(f"forced_or_sly_deal_target_property={self.forced_or_sly_deal_target_property_name}")
+        if self.forced_deal_source_property_info:
+            components.append(f"forced_deal_source_property_info={self.forced_deal_source_property_info}")
+        if self.forced_or_sly_deal_target_property_info:
+            components.append(f"forced_or_sly_deal_target_property_info={self.forced_or_sly_deal_target_property_info}")
     
         return f"<{', '.join(components)}>"

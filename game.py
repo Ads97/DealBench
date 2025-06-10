@@ -108,6 +108,7 @@ class Game:
                         return # End turn immediately if someone won
             else:
                 print("Invalid action chosen. Please try again.")
+                print(self.to_json(debug=True))
                 sys.exit(1)
             # print(f"TEMP: Simulating action {actions_played}") # TEMP
 
@@ -318,7 +319,8 @@ class Game:
         if self._attempt_just_say_no(player, target_player):
             print(f"{target_player.name} cancelled the Sly Deal from {player.name} with Just Say No.")
             return False
-        stolen_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        print(f"{action.forced_or_sly_deal_target_property_info}")
+        stolen_card = target_player.get_card_from_properties(name=action.forced_or_sly_deal_target_property_info[0], color=action.forced_or_sly_deal_target_property_info[1])
         target_player.remove_card_from_properties(stolen_card)
         player.add_card_to_properties(stolen_card)
         print(f"{player.name} stole property {stolen_card.name} from {target_player_name} with a sly deal.")
@@ -333,8 +335,9 @@ class Game:
         if self._attempt_just_say_no(player, target_player):
             print(f"{target_player.name} cancelled the Forced Deal from {player.name} with Just Say No.")
             return False
-        source_card = player.get_card_from_properties(action.forced_deal_source_property_name)
-        target_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        source_card = player.get_card_from_properties(*action.forced_deal_source_property_info)
+        print(f"{action.forced_or_sly_deal_target_property_info}")
+        target_card = target_player.get_card_from_properties(name=action.forced_or_sly_deal_target_property_info[0], color=action.forced_or_sly_deal_target_property_info[1])
         player.remove_card_from_properties(source_card)
         target_player.add_card_to_properties(source_card)
         target_player.remove_card_from_properties(target_card)
@@ -499,7 +502,7 @@ class TestPlayer(Player):
                                     action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_target_property_name=target_property)
                             )
             elif isinstance(card, ForcedDealCard):
-                hand_properties = [card.name for prop_set in self.get_property_sets().values() for card in prop_set.cards if isinstance(card, PropertyCard)]
+                hand_properties = [card for prop_set in self.get_property_sets().values() for card in prop_set.cards if isinstance(card, PropertyCard)]
                 if len(hand_properties) > 0:
                     source_property = random.choice(hand_properties)
                     for target_player in game_state_dict['players']:
@@ -507,11 +510,11 @@ class TestPlayer(Player):
                             continue
                         for color, set in target_player['property_sets'].items():
                             if not set['is_full_set']:
-                                target_property = random.choice(set['cards'])['name']
+                                target_property = random.choice(set['cards'])
                                 valid_actions.append(
                                     Action(source_player=self, card=card,target_player_names=[target_player['name']],
-                                        action_type=ActionType.PLAY_ACTION, forced_deal_source_property_name=source_property,
-                                        forced_or_sly_deal_target_property_name=target_property)
+                                        action_type=ActionType.PLAY_ACTION, forced_deal_source_property_name=(source_property.name, source_property.get_color()),
+                                        forced_or_sly_deal_target_property_name=(target_property['name'], target_property['set_color']))
                                 )
 
         # ------------------------------------------------------------------------

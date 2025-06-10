@@ -102,12 +102,12 @@ class Player(ABC): # Inherit from ABC
                 return True
         return False
 
-    def get_card_from_properties(self, card_name: str):
+    def get_card_from_properties(self, card_name: str, color: PropertyColor):
         """Retrieve a property card object given its name."""
-        for prop_set in self.property_sets.values():
-            for card in prop_set.cards:
-                if card.name == card_name:
-                    return card
+        prop_set = self.property_sets[color]
+        for card in prop_set.cards:
+            if card.name == card_name:
+                return card
         return None
 
     def get_bank_value(self) -> int:

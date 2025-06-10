@@ -316,11 +316,12 @@ class RulesEngine:
         if action.target_property_set is not None:
             print(f"Validation Error: Forced Deal should not specify target property set. {action}")
             return False
-        target_property_card = target_players[0].get_card_from_properties(action.forced_or_sly_deal_target_property_name)
+        print(f"{action.forced_or_sly_deal_target_property_name}")
+        target_property_card = target_players[0].get_card_from_properties(*action.forced_or_sly_deal_target_property_name)
         if target_property_card is None:
             print(f"Validation Error: Forced Deal target property not found in target player. {action}")
             return False
-        source_property_card = player.get_card_from_properties(action.forced_deal_source_property_name)
+        source_property_card = player.get_card_from_properties(*action.forced_deal_source_property_name)
         if source_property_card is None:
             print(f"Validation Error: Forced Deal source property not found in source player. {action}")
             return False

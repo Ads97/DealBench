@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 from deck import Deck
 from player import Player
 from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
-from action import Action, ActionType
+from action import Action, ActionType, ActionPropertyInfo
 from rules_engine import RulesEngine
 import random 
 import sys
@@ -320,7 +320,7 @@ class Game:
             print(f"{target_player.name} cancelled the Sly Deal from {player.name} with Just Say No.")
             return False
         print(f"{action.forced_or_sly_deal_target_property_info}")
-        stolen_card = target_player.get_card_from_properties(name=action.forced_or_sly_deal_target_property_info[0], color=action.forced_or_sly_deal_target_property_info[1])
+        stolen_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_info)
         target_player.remove_card_from_properties(stolen_card)
         player.add_card_to_properties(stolen_card)
         print(f"{player.name} stole property {stolen_card.name} from {target_player_name} with a sly deal.")
@@ -335,9 +335,9 @@ class Game:
         if self._attempt_just_say_no(player, target_player):
             print(f"{target_player.name} cancelled the Forced Deal from {player.name} with Just Say No.")
             return False
-        source_card = player.get_card_from_properties(*action.forced_deal_source_property_info)
+        source_card = player.get_card_from_properties(action.forced_deal_source_property_info)
         print(f"{action.forced_or_sly_deal_target_property_info}")
-        target_card = target_player.get_card_from_properties(name=action.forced_or_sly_deal_target_property_info[0], color=action.forced_or_sly_deal_target_property_info[1])
+        target_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_info)
         player.remove_card_from_properties(source_card)
         target_player.add_card_to_properties(source_card)
         target_player.remove_card_from_properties(target_card)
@@ -496,10 +496,13 @@ class TestPlayer(Player):
                         continue
                     for color, set in target_player['property_sets'].items():
                         if not set['is_full_set']:
-                            target_property = random.choice(set['cards'])['name']
+                            property_cards = [c for c in set['cards'] if 'set_color' in c or 'current_color' in c]
+                            card_choice = random.choice(property_cards)
+                            color_key = card_choice.get('set_color') or card_choice.get('current_color')
+                            target_info = ActionPropertyInfo(name=card_choice['name'], prop_color=PropertyColor[color_key])
                             valid_actions.append(
                                 Action(source_player=self, card=card,target_player_names=[target_player['name']],
-                                    action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_target_property_name=target_property)
+                                    action_type=ActionType.PLAY_ACTION, forced_or_sly_deal_target_property_info=target_info)
                             )
             elif isinstance(card, ForcedDealCard):
                 hand_properties = [card for prop_set in self.get_property_sets().values() for card in prop_set.cards if isinstance(card, PropertyCard)]
@@ -510,11 +513,15 @@ class TestPlayer(Player):
                             continue
                         for color, set in target_player['property_sets'].items():
                             if not set['is_full_set']:
-                                target_property = random.choice(set['cards'])
+                                property_cards = [c for c in set['cards'] if 'set_color' in c or 'current_color' in c]
+                                target_property = random.choice(property_cards)
+                                target_color_key = target_property.get('set_color') or target_property.get('current_color')
+                                source_info = ActionPropertyInfo(name=source_property.name, prop_color=source_property.get_color())
+                                target_info = ActionPropertyInfo(name=target_property['name'], prop_color=PropertyColor[target_color_key])
                                 valid_actions.append(
                                     Action(source_player=self, card=card,target_player_names=[target_player['name']],
-                                        action_type=ActionType.PLAY_ACTION, forced_deal_source_property_name=(source_property.name, source_property.get_color()),
-                                        forced_or_sly_deal_target_property_name=(target_property['name'], target_property['set_color']))
+                                        action_type=ActionType.PLAY_ACTION, forced_deal_source_property_info=source_info,
+                                        forced_or_sly_deal_target_property_info=target_info)
                                 )
 
         # ------------------------------------------------------------------------

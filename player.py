@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Optional
 
 from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
+from action import ActionPropertyInfo
 
 class Player(ABC): # Inherit from ABC
     """Abstract Base Class for a player in the game."""
@@ -102,11 +103,11 @@ class Player(ABC): # Inherit from ABC
                 return True
         return False
 
-    def get_card_from_properties(self, card_name: str, color: PropertyColor):
-        """Retrieve a property card object given its name."""
-        prop_set = self.property_sets[color]
+    def get_card_from_properties(self, info: 'ActionPropertyInfo'):
+        """Retrieve a property card object given its name and color."""
+        prop_set = self.property_sets[info.prop_color]
         for card in prop_set.cards:
-            if card.name == card_name:
+            if card.name == info.name:
                 return card
         return None
 

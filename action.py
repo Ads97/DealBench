@@ -1,6 +1,6 @@
-from typing import List, Optional, Tuple
+from __future__ import annotations
+from typing import List, Optional
 from card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor
-from player import Player 
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -15,18 +15,27 @@ class ActionType(Enum):
 
 
 @dataclass
+class ActionPropertyInfo:
+    name: str
+    prop_color: PropertyColor
+
+    def __repr__(self) -> str:
+        return f"ActionPropertyInfo(name='{self.name}', prop_color={self.prop_color.name})"
+
+
+@dataclass
 class Action:
 
     def __init__(self,
         action_type: ActionType,
-        source_player: Player, 
+        source_player: 'Player',
         card: Optional[Card] = None, # Card object being played
         target_player_names: Optional[List[str]] = None, # List of Player names, if applicable
         target_property_set: Optional[PropertyColor] = None,
         rent_color: Optional[PropertyColor] = None,
         double_the_rent_count: Optional[int] = 0,
-        forced_deal_source_property_info: Optional[Tuple[str, PropertyColor]] = None,
-        forced_or_sly_deal_target_property_info: Optional[Tuple[str, PropertyColor]] = None):
+        forced_deal_source_property_info: Optional[ActionPropertyInfo] = None,
+        forced_or_sly_deal_target_property_info: Optional[ActionPropertyInfo] = None):
         """Represents a game action taken by a player."""
         self.action_type = action_type
         self.source_player = source_player
@@ -74,5 +83,5 @@ class Action:
             components.append(f"forced_deal_source_property_info={self.forced_deal_source_property_info}")
         if self.forced_or_sly_deal_target_property_info:
             components.append(f"forced_or_sly_deal_target_property_info={self.forced_or_sly_deal_target_property_info}")
-    
+
         return f"<{', '.join(components)}>"

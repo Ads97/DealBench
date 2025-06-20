@@ -1,13 +1,14 @@
 import os
 import json
+import re
 import requests
 from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 from player import Player
-from action import Action, ActionType
-from card import Card
+from action import Action, ActionType, ActionPropertyInfo
+from card import Card, PropertyColor
 from deck_config import ACTIONS_PER_TURN
 load_dotenv()
 
@@ -16,6 +17,17 @@ class LLMHandler():
         self.model_name = model_name
         self.url = "https://openrouter.ai/api/v1/chat/completions"
         self.template_env = Environment(loader=FileSystemLoader('prompts'))
+
+    def _extract_json(self, text: str) -> Union[Dict[str, Any], List[Any]]:
+        """Extract and parse a JSON object or array from arbitrary text."""
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            # Try to locate the first JSON object or array in the text
+            match = re.search(r'\{.*\}|\[.*\]', text, re.DOTALL)
+            if match:
+                return json.loads(match.group(0))
+            raise
 
     def _render_template(self, template_name: str, **kwargs) -> str:
         """Render a Jinja2 template with the given context."""
@@ -49,7 +61,8 @@ class LLMHandler():
             print(f"Response headers: {response.headers}")
             print(f"Response content: {response.text}")
             result = response.json()
-            return json.loads(result['choices'][0]['message']['content'])
+            content = result['choices'][0]['message']['content']
+            return self._extract_json(content)
         except Exception as e:
             print(f"Error calling LLM: {e}")
             raise
@@ -70,24 +83,47 @@ class LLMPlayer(Player, LLMHandler):
                 game_state=game_state_dict,
                 actions_per_turn=ACTIONS_PER_TURN
             )
-            
-            if response.get('action_type') == 'PASS':
-                return None
-                
-            # Find the card in hand by name
-            card = next((c for c in self.hand if c.name == response.get('card_name')), None)
-            if not card and response.get('action_type') != 'PASS':
-                print(f"Card {response.get('card_name')} not found in hand")
-                return None
-                
+
+            if not isinstance(response, dict):
+                raise ValueError(f"LLM response must be an object: {response}")
+            if 'action_type' not in response:
+                raise ValueError("LLM response missing 'action_type'")
+
+            action_type_str = response['action_type']
+
+            try:
+                action_type = ActionType[action_type_str]
+            except KeyError:
+                raise ValueError(f"Invalid action_type '{action_type_str}'")
+
+            card = None
+            card_name = response.get('card_name')
+            if action_type != ActionType.PASS:
+                if not card_name:
+                    raise ValueError("'card_name' required for non-PASS actions")
+                card = next((c for c in self.hand if c.name == card_name), None)
+                if not card:
+                    raise ValueError(f"Card {card_name} not found in hand")
+
+            def build_info(data):
+                if not data:
+                    return None
+                return ActionPropertyInfo(name=data['name'], prop_color=PropertyColor[data['prop_color']])
+
+            double_the_rent_count = response.get('double_the_rent_count')
+            if double_the_rent_count is None:
+                double_the_rent_count = 0
+
             return Action(
-                action_type=ActionType[response['action_type']],
+                action_type=action_type,
                 source_player=self,
                 card=card,
                 target_player_names=response.get('target_players', []),
                 target_property_set=response.get('target_property_set'),
                 rent_color=response.get('rent_color'),
-                double_the_rent_count=response.get('double_the_rent_count', 0)
+                double_the_rent_count=double_the_rent_count,
+                forced_deal_source_property_info=build_info(response.get('forced_deal_source_property_info')),
+                forced_or_sly_deal_target_property_info=build_info(response.get('forced_or_sly_deal_target_property_info'))
             )
             
         except Exception as e:

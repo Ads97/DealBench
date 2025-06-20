@@ -141,21 +141,6 @@ class Deck:
                  specific_class = DealBreakerCard
             else:
                  raise ValueError(f"Unknown deal breaker card class: {class_name}")
-        elif card_type == CardType.ACTION_OTHER:
-            # For generic actions defined only by name/value in config for now
-            # We need a generic ActionCard instance, but ActionCard is ABC.
-            # Option 1: Create a concrete GenericActionCard(ActionCard)
-            # Option 2: Use a placeholder or skip instantiation if ActionHandler only needs type/name
-            # Let's skip instantiation for ACTION_OTHER for now, assuming handler uses config info.
-            # OR, we could instantiate a base ActionCard if it were not abstract.
-            # For simplicity now, let's assume a generic ActionCard can be made (modify card.py if needed)
-            # print(f"Warning: ACTION_OTHER ({name}) configured but no specific class. Creating generic ActionCard.")
-            # specific_class = ActionCard # This would fail if ActionCard is ABC and has abstract methods
-            # If ActionCard becomes concrete or we add GenericActionCard:
-            # kwargs = {'action_name': item.get('action_name')}
-            print(f"Skipping instantiation for ACTION_OTHER: {name} (needs concrete class or handler logic)")
-            return [] # Don't create instances for now
-
         else:
             raise ValueError(f"Unhandled card type in configuration: {card_type}")
 

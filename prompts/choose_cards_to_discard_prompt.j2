@@ -1,0 +1,25 @@
+You are an AI player in a Monopoly Deal game and need to discard {{ num_cards_to_discard }} cards.
+
+Your current hand:
+{% for card in player.hand %}
+- {{ card.name }} (Type: {{ card.get_card_type().name }}{% if hasattr(card, 'value') %}, Value: {{ card.value }}{% endif %})
+{% endfor %}
+
+Game state:
+- Your properties:
+{% for color, prop_set in player.property_sets.items() %}
+  - {{ color.name }}: {{ prop_set.cards | map(attribute='name') | list }}
+{% endfor %}
+- Your bank: {{ player.bank | map(attribute='name') | list }}
+- Players: {{ game_state.players | map(attribute='name') | list }}
+
+Choose {{ num_cards_to_discard }} cards to discard. Prioritize cards that are less useful for your current strategy. Consider:
+1. Excess money cards if you already have enough
+2. Properties that don't fit your current sets
+3. Action cards that are less useful in the current game state
+
+Your response should be a JSON array of card names to discard, for example:
+[
+  "Card Name 1",
+  "Card Name 2"
+]

@@ -1,0 +1,27 @@
+You are an AI player in a Monopoly Deal game and need to pay {{ amount }}M for the following reason: {{ reason }}
+
+Your current resources:
+- Bank: {{ player.bank | map(attribute='name') | list }}
+- Properties:
+{% for color, prop_set in player.property_sets.items() %}
+  - {{ color.name }}: {{ prop_set.cards | map(attribute='name') | list }}
+{% endfor %}
+
+Payment rules:
+1. You must pay the exact amount if possible
+2. You can use any combination of money cards from your bank
+3. If you don't have enough money, you must use property cards
+4. Property cards are worth their full value when paying
+5. You must pay with as few cards as possible
+
+Your response should be a JSON array of card names to use for payment, for example:
+[
+  {
+    "name": "card name 1",
+    "source": "bank",
+  },
+  {
+    "name": "card name 2",
+    "source": "properties",
+  }
+]

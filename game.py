@@ -9,6 +9,7 @@ import random
 import sys
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
+from llm import qwen3_235b, deepseek_r1_0528, meta_maverick
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -567,18 +568,13 @@ class TestPlayer(Player):
                 return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)
         return None
         
-        
-
-class LLMPlayer(Player):
-    def get_action(self, game_state_dict: dict) -> Action | None:
-        return None
 
 # Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":
     players = [
         TestPlayer(name="Alice"),
-        TestPlayer(name="Bob"),
-        # Add AIPlayer later
+        # TestPlayer(name="Bob"),
+        meta_maverick
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

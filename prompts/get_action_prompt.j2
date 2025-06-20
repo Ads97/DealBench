@@ -1,0 +1,185 @@
+You are an AI player in a game of Agent Deal. Your goal is to win by collecting 3 full property sets of different colors. 
+
+Game state:
+- Current player: You ({{ game_state.current_player_name }})
+- Players: {{ game_state.players | map(attribute='name') | list }}
+- Turn count: {{ game_state.turns_completed_in_game }}
+- Actions played in current turn: {{ game_state.actions_played_in_current_turn }} / {{ actions_per_turn }}
+
+Your current game state:
+{%- set current_player_obj = game_state.players | selectattr('name', 'equalto', game_state.current_player_name) | first %}
+- Hand: {{ player.hand | map(attribute='name') | list }}
+- Bank: {{ current_player_obj.banked_cards | map(attribute='name') | list }} (Total value: {{ current_player_obj.bank_value }})
+- Property Sets:
+{% if current_player_obj.property_sets %}
+  {% for color, prop_set in current_player_obj.property_sets.items() %}
+  - {{ color.name if color is string else color }}: 
+    Cards: {{ prop_set.cards | map(attribute='name') | list }}
+    Full Set: {{ prop_set.is_full_set }}
+    House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
+    Rent: {{ prop_set.rent }}
+  {% endfor %}
+{% else %}
+None.
+{% endif %}
+
+Other players:
+{% for player in game_state.players %}
+  {% if player.name != game_state.current_player_name %}
+- {{ player.name }}:
+  - Bank: {{ player.banked_cards | map(attribute='name') | list }} (Total value: {{ player.bank_value }})
+  - Property Sets:
+    {% if player.property_sets %}
+      {% for color, prop_set in player.property_sets.items() %}
+    - {{ color.name if color is string else color }}:
+        Cards: {{ prop_set.cards | map(attribute='name') | list }}
+        Full Set: {{ prop_set.is_full_set }}
+        House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
+        Rent: {{ prop_set.rent }}
+      {% endfor %}
+    {% else %}
+      None.
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+Available actions:
+1. Play a property card from your hand
+2. Move a wild property card from one property set to another (does not consume an action)
+3. Play a money card to your bank
+4. Play an action card (e.g. Rent, Pass Go, Birthday, Debt Collector, Sly Deal, Forced Deal, Deal Breaker, Just Say No, etc.)
+5. End your turn
+
+---
+
+# Action JSON Structure
+Your response **must** be a single JSON object describing the action you will take. Only include fields relevant to your chosen action type. See the table below for all possible fields:
+
+| Field Name                        | Required? | Description                                                                                       | Example Value                                  |
+|-----------------------------------|-----------|---------------------------------------------------------------------------------------------------|------------------------------------------------|
+| reasoning                         | Always    | Short explanation for why you chose this action                                                   | "Playing rent to maximize income"              |
+| action_type                       | Always    | One of: ADD_TO_PROPERTIES, MOVE_PROPERTY, ADD_TO_BANK, PLAY_ACTION, PASS                         | "PLAY_ACTION"                                 |
+| card_name                         | If using a card | The name of the card from your hand (or properties for MOVE_PROPERTY)                         | "Blue Property", "Deal Breaker"               |
+| target_players                    | If action targets players | List of player names to target (e.g. for Rent, Sly Deal, Forced Deal, etc.)            | ["Alice"]                                     |
+| target_property_set               | If action targets a property set | The color name of the property set to target (or move to) | "RED", "BLUE"                                  |
+| rent_color                        | If playing a Rent card | The color to charge rent for (must be a valid color for the Rent card)                 | "GREEN"                                       |
+| double_the_rent_count             | If using Double the Rent | Number of Double the Rent cards to play with a Rent card (each consumes an action)     | 1, 2                                            |
+| forced_deal_source_property_info  | Forced Deal only | Object: {"name": card_name, "prop_color": color_name} for your property to trade        | {"name": "Orange Property", "prop_color": "ORANGE"} |
+| forced_or_sly_deal_target_property_info | Forced/Sly Deal only | Object: {"name": card_name, "prop_color": color_name} for target property | {"name": "Red Property", "prop_color": "RED"}      |
+
+---
+
+# Detailed Examples
+
+## 1. Play a property card from your hand
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "ADD_TO_PROPERTIES",
+  "card_name": "Blue Property",
+  "target_property_set": "BLUE"
+}
+```
+
+## 2. Move a wild property card between sets
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "MOVE_PROPERTY",
+  "card_name": "Wild Property",
+  "target_property_set": "GREEN"
+}
+```
+
+## 3. Play a money card to your bank
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "ADD_TO_BANK",
+  "card_name": "5M Money"
+}
+```
+
+## 4. Play an action card
+### a. Rent Card (with Double the Rent)
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "Green Rent",
+  "target_players": ["Alice", "Bob"],
+  "rent_color": "GREEN",
+  "double_the_rent_count": 1
+}
+```
+### b. Sly Deal
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "Sly Deal",
+  "target_players": ["Alice"],
+  "forced_or_sly_deal_target_property_info": {"name": "Red Property", "prop_color": "RED"}
+}
+```
+### c. Forced Deal
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "Forced Deal",
+  "target_players": ["Alice"],
+  "forced_deal_source_property_info": {"name": "Orange Property", "prop_color": "ORANGE"},
+  "forced_or_sly_deal_target_property_info": {"name": "Red Property", "prop_color": "RED"}
+}
+```
+### d. Deal Breaker
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "Deal Breaker",
+  "target_players": ["Alice"],
+  "target_property_set": "BLUE"
+}
+```
+### e. Pass Go, It's My Birthday, Debt Collector
+```
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "Pass Go"
+}
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "It's My Birthday",
+  "target_players": ["Alice", "Bob"]
+}
+{
+  "reasoning": "One line reasoning on what action you should choose",
+  "action_type": "PLAY_ACTION",
+  "card_name": "Debt Collector",
+  "target_players": ["Alice"]
+}
+```
+
+## 5. End your turn
+```
+{
+  "reasoning": "No strong plays left this turn",
+  "action_type": "PASS"
+}
+```
+
+---
+
+# Guidance
+- Only include fields relevant to the action you are taking. Do not include unnecessary fields.
+- For advanced actions (Sly Deal, Forced Deal, Deal Breaker), you must specify the correct property info objects as shown above.
+- Always use the exact card name as it appears in your hand or properties.
+- For Rent, specify rent_color and double_the_rent_count if using Double the Rent cards.
+- For actions targeting other players or property sets, always specify the correct player names and property set colors.
+- If you are unsure, refer to the above examples.
+
+Choose the best action based on the current game state. Your response must be a single JSON object in the above format.

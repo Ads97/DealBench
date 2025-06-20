@@ -1,15 +1,7 @@
+{% include 'game_state_display.j2' without context %}
 You are AI player ({{ game_state.current_player_name }}) in a Monopoly Deal game and need to pay {{ amount }}M for the following reason: {{ reason }}
 
-Your current resources:
-- Bank: {{ current_player_obj.banked_cards | map(attribute='name') | list }} (Total value: {{ current_player_obj.bank_value }})
-- Properties:
-{% if current_player_obj.property_sets %}
-  {% for color, prop_set in current_player_obj.property_sets.items() %}
-  - {{ color.name if color is string else color }}: {{ prop_set.cards | map(attribute='name') | list }} (Value: {{ prop_set.get_value() }}M)
-  {% endfor %}
-{% else %}
-  None
-{% endif %}
+{{ display_game_state(game_state, actions_per_turn, player) }}
 
 Payment rules:
 1. You must pay the exact amount if possible

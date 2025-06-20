@@ -1,47 +1,7 @@
+{% include 'game_state_display.j2' without context %}
 You are an AI player in a game of Agent Deal. Your goal is to win by collecting 3 full property sets of different colors. 
 
-Game state:
-- Current player: You ({{ game_state.current_player_name }})
-- Players: {{ game_state.players | map(attribute='name') | list }}
-- Turn count: {{ game_state.turns_completed_in_game }}
-- Actions played in current turn: {{ game_state.actions_played_in_current_turn }} / {{ actions_per_turn }}
-
-Your current game state:
-{%- set current_player_obj = game_state.players | selectattr('name', 'equalto', game_state.current_player_name) | first %}
-- Hand: {{ player.hand | map(attribute='name') | list }}
-- Bank: {{ current_player_obj.banked_cards | map(attribute='name') | list }} (Total value: {{ current_player_obj.bank_value }})
-- Property Sets:
-{% if current_player_obj.property_sets %}
-  {% for color, prop_set in current_player_obj.property_sets.items() %}
-  - {{ color.name if color is string else color }}: 
-    Cards: {{ prop_set.cards | map(attribute='name') | list }}
-    Full Set: {{ prop_set.is_full_set }}
-    House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
-    Rent: {{ prop_set.rent }}
-  {% endfor %}
-{% else %}
-None.
-{% endif %}
-
-Other players:
-{% for player in game_state.players %}
-  {% if player.name != game_state.current_player_name %}
-- {{ player.name }}:
-  - Bank: {{ player.banked_cards | map(attribute='name') | list }} (Total value: {{ player.bank_value }})
-  - Property Sets:
-    {% if player.property_sets %}
-      {% for color, prop_set in player.property_sets.items() %}
-    - {{ color.name if color is string else color }}:
-        Cards: {{ prop_set.cards | map(attribute='name') | list }}
-        Full Set: {{ prop_set.is_full_set }}
-        House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
-        Rent: {{ prop_set.rent }}
-      {% endfor %}
-    {% else %}
-      None.
-    {% endif %}
-  {% endif %}
-{% endfor %}
+{{ display_game_state(game_state, actions_per_turn, player) }}
 
 Available actions:
 1. Play a property card from your hand

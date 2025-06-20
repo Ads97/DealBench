@@ -1,14 +1,11 @@
+{% include 'game_state_display.j2' without context %}
 You are an AI player in a Monopoly Deal game and have a "Just Say No" card in your hand. Another player has just played an action against you:
 
 Action: {{ action }}
 
-Your current state:
-- Hand: {{ player.hand | map(attribute='name') | list }}
-- Bank: {{ player.bank | map(attribute='name') | list }}
-- Properties:
-{% for color, prop_set in player.property_sets.items() %}
-  - {{ color.name }}: {{ prop_set.cards | map(attribute='name') | list }}
-{% endfor %}
+Decide if you want to play the "just say no" card to negate this action or not at this time.
+
+{{ display_game_state(game_state, actions_per_turn, player) }}
 
 Your response should be a JSON object with the following structure:
 {

@@ -3,12 +3,11 @@ import json
 import re
 import requests
 from typing import List, Dict, Any, Optional, Union
-from pathlib import Path
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 from player import Player
 from action import Action, ActionType, ActionPropertyInfo
-from card import Card, PropertyColor
+from card import Card, PropertyColor, CardType
 from deck_config import ACTIONS_PER_TURN
 load_dotenv()
 
@@ -189,7 +188,7 @@ class LLMPlayer(Player, LLMHandler):
     def wants_to_negate(self, action: Action) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
         # Check if we have a Just Say No card
-        just_say_no_count = len([c for c in self.hand if c.type == CardType.ACTION_JUST_SAY_NO])
+        just_say_no_count = len([c for c in self.hand if c.get_card_type() == CardType.ACTION_JUST_SAY_NO])
         if not just_say_no_count:
             return False
             

@@ -10,14 +10,8 @@ Your current state:
   - {{ color.name }}: {{ prop_set.cards | map(attribute='name') | list }}
 {% endfor %}
 
-Considerations:
-1. Is this action significantly harmful to your position?
-2. Do you have other ways to counter or recover from this action?
-3. Would saving your "Just Say No" card be more valuable for a future action?
-4. How many "Just Say No" cards do you have left?
-
 Your response should be a JSON object with the following structure:
 {
-  "negate": true/false,
-  "reasoning": "Your reasoning for this decision"
+  "reasoning": "Reasoning on whether you want to play the just say no card",
+  "use_just_say_no": True/False,
 }

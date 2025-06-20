@@ -153,8 +153,8 @@ class LLMPlayer(Player, LLMHandler):
     def wants_to_negate(self, action: Action) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
         # Check if we have a Just Say No card
-        just_say_no = next((c for c in self.hand if c.name == 'Just Say No'), None)
-        if not just_say_no:
+        just_say_no_count = len([c for c in self.hand if c.type == CardType.ACTION_JUST_SAY_NO])
+        if not just_say_no_count:
             return False
             
         try:

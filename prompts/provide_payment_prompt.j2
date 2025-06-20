@@ -1,18 +1,19 @@
-You are an AI player in a Monopoly Deal game and need to pay {{ amount }}M for the following reason: {{ reason }}
+You are AI player ({{ game_state.current_player_name }}) in a Monopoly Deal game and need to pay {{ amount }}M for the following reason: {{ reason }}
 
 Your current resources:
-- Bank: {{ player.bank | map(attribute='name') | list }}
+- Bank: {{ current_player_obj.banked_cards | map(attribute='name') | list }} (Total value: {{ current_player_obj.bank_value }})
 - Properties:
-{% for color, prop_set in player.property_sets.items() %}
-  - {{ color.name }}: {{ prop_set.cards | map(attribute='name') | list }}
-{% endfor %}
+{% if current_player_obj.property_sets %}
+  {% for color, prop_set in current_player_obj.property_sets.items() %}
+  - {{ color.name if color is string else color }}: {{ prop_set.cards | map(attribute='name') | list }} (Value: {{ prop_set.get_value() }}M)
+  {% endfor %}
+{% else %}
+  None
+{% endif %}
 
 Payment rules:
 1. You must pay the exact amount if possible
-2. You can use any combination of money cards from your bank
-3. If you don't have enough money, you must use property cards
-4. Property cards are worth their full value when paying
-5. You must pay with as few cards as possible
+2. You can use any combination of money cards from your bank and property cards from your property sets
 
 Your response should be a JSON array of card names to use for payment, for example:
 [

@@ -151,15 +151,11 @@ class LLMHandler():
             "structured_outputs": True,
             # "max_tokens": 1000
         }
-        try:
-            response = requests.post(self.url, headers=headers, json=payload)
-            response.raise_for_status()
-            print(f"Response status: {response.status_code}")
-            print(f"Response headers: {response.headers}")
-            print(f"Response content: {response.text}")
-        except requests.exceptions.RequestException as e:
-            print(f"Request failed: {e}")
-            sys.exit()
+        response = requests.post(self.url, headers=headers, json=payload)
+        response.raise_for_status()
+        print(f"Response status: {response.status_code}")
+        print(f"Response headers: {response.headers}")
+        print(f"Response content: {response.text}")
         return self._extract_json(response)
 
 
@@ -204,7 +200,11 @@ class LLMPlayer(Player, LLMHandler):
         def build_info(data):
             if not data:
                 return None
-            return ActionPropertyInfo(name=data['name'], prop_color=PropertyColor[data['prop_color']])
+            if not data["prop_color"] or not data["name"]:
+                return None
+            name = data["name"]
+            prop_color = data["prop_color"]
+            return ActionPropertyInfo(name=name, prop_color=PropertyColor[prop_color])
 
         double_the_rent_count = response.get('double_the_rent_count')
         if double_the_rent_count is None:

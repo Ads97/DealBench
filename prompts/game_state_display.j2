@@ -1,5 +1,5 @@
 {% macro render_card(card) -%}
-{{ card.to_json().items() | map('join', ': ') | join(', ') }}
+{{ card.items() | map('join', ': ') | join(', ') }}
 {%- endmacro %}
 
 {% macro display_game_state(game_state, actions_per_turn, current_player) %}
@@ -10,31 +10,30 @@ Game state:
 - Actions played in current turn: {{ game_state.actions_played_in_current_turn }} / {{ actions_per_turn }}
 
 Your current game state:
-- {%- set current_player_obj = game_state.players | selectattr('name', 'equalto', game_state.current_player_name) | first %}
 - Hand:
 {% if current_player.hand %}
 {% for card in current_player.hand %}
-  - {{ render_card(card) }}
+- - {{ render_card(card.to_json()) }}
 {% endfor %}
 {% else %}
   None.
 {% endif %}
-- Bank (Total value: {{ current_player_obj.bank_value }}):
-{% if current_player_obj.banked_cards %}
-{% for card in current_player_obj.banked_cards %}
-  - {{ render_card(card) }}
+- Bank (Total value: {{ current_player.get_bank_value() }}):
+{% if current_player.bank %}
+{% for card in current_player.bank %}
+- - {{ render_card(card.to_json()) }}
 {% endfor %}
 {% else %}
   None.
 {% endif %}
 - Property Sets:
-{% if current_player_obj.property_sets %}
-  {% for color, prop_set in current_player_obj.property_sets.items() %}
-  - {{ color.name if color is string else color }}:
+{% if current_player.property_sets %}
+  {% for color, prop_set in current_player.property_sets.items() %}
+  - {{ color.name}}:
     Cards:
     {% if prop_set.cards %}
     {% for card in prop_set.cards %}
-      - {{ render_card(card) }}
+      - {{ render_card(card.to_json()) }}
     {% endfor %}
     {% else %}
       None.
@@ -44,7 +43,7 @@ Your current game state:
     Rent: {{ prop_set.rent }}
   {% endfor %}
 {% else %}
-None.
+ None.
 {% endif %}
 
 Other players:
@@ -57,7 +56,7 @@ Other players:
       - {{ render_card(card) }}
     {% endfor %}
     {% else %}
-      None.
+    None.
     {% endif %}
   - Property Sets:
     {% if player.property_sets %}
@@ -66,10 +65,10 @@ Other players:
         Cards:
         {% if prop_set.cards %}
         {% for card in prop_set.cards %}
-          - {{ render_card(card) }}
+        - {{ render_card(card) }}
         {% endfor %}
         {% else %}
-          None.
+        None.
         {% endif %}
         Full Set: {{ prop_set.is_full_set }}
         House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}

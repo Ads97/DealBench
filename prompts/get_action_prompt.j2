@@ -1,11 +1,11 @@
-{% include 'game_state_display.j2' without context %}
+{% from 'game_state_display.j2' import display_game_state %}
 You are an AI player in a game of Agent Deal. Your goal is to win by collecting 3 full property sets of different colors. 
 
 {{ display_game_state(game_state, actions_per_turn, player) }}
 
 Available actions:
 1. Play a property card from your hand
-2. Move a wild property card from one property set to another (does not consume an action)
+2. Move a wild property card from one property set to another (does not consume an action). If a wild property card is used to start a property set, you must specify the set color (can be only 1 color).
 3. Play a money card to your bank
 4. Play an action card (e.g. Rent, Pass Go, Birthday, Debt Collector, Sly Deal, Forced Deal, Deal Breaker, Just Say No, etc.)
 5. End your turn
@@ -32,105 +32,153 @@ Your response **must** be a single JSON object describing the action you will ta
 # Detailed Examples
 
 ## 1. Play a property card from your hand
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "ADD_TO_PROPERTIES",
-  "card_name": "Blue Property",
-  "target_property_set": "BLUE"
+  "card_name": "Property Name",
+  "target_players": null,
+  "target_property_set": "BLUE",
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
 
 ## 2. Move a wild property card between sets
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "MOVE_PROPERTY",
   "card_name": "Wild Property",
-  "target_property_set": "GREEN"
+  "target_players": null,
+  "target_property_set": "GREEN",
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
 
 ## 3. Play a money card to your bank
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "ADD_TO_BANK",
-  "card_name": "5M Money"
+  "card_name": "$5M",
+  "target_players": null,
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
 
 ## 4. Play an action card
 ### a. Rent Card (with Double the Rent)
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
-  "card_name": "Green Rent",
-  "target_players": ["Alice", "Bob"],
-  "rent_color": "GREEN",
-  "double_the_rent_count": 1
+  "card_name": "Rent (Pink/Orange)",
+  "target_players": "['Alice', 'Bob']",
+  "target_property_set": null,
+  "rent_color": "PINK",
+  "double_the_rent_count": 1,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
+
 ### b. Sly Deal
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Sly Deal",
-  "target_players": ["Alice"],
-  "forced_or_sly_deal_target_property_info": {"name": "Red Property", "prop_color": "RED"}
+  "target_players": "['Alice']",
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": {
+    "name": "Wild (Pink/Orange)",
+    "prop_color": "PINK"
+  }
 }
-```
+
 ### c. Forced Deal
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Forced Deal",
-  "target_players": ["Alice"],
-  "forced_deal_source_property_info": {"name": "Orange Property", "prop_color": "ORANGE"},
-  "forced_or_sly_deal_target_property_info": {"name": "Red Property", "prop_color": "RED"}
+  "target_players": "['Alice']",
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": {
+    "name": "Orange Property",
+    "prop_color": "ORANGE"
+  },
+  "forced_or_sly_deal_target_property_info": {
+    "name": "Property Name",
+    "prop_color": "RED"
+  }
 }
-```
+
 ### d. Deal Breaker
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Deal Breaker",
-  "target_players": ["Alice"],
-  "target_property_set": "BLUE"
+  "target_players": "['Alice']",
+  "target_property_set": "BLUE",
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
+
 ### e. Pass Go, It's My Birthday, Debt Collector
-```
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
-  "card_name": "Pass Go"
+  "card_name": "Pass Go",
+  "target_players": null,
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "It's My Birthday",
-  "target_players": ["Alice", "Bob"]
+  "target_players": "['Alice', 'Bob']",
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
 {
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Debt Collector",
-  "target_players": ["Alice"]
+  "target_players": "['Alice']",
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
 
 ## 5. End your turn
-```
 {
   "reasoning": "No strong plays left this turn",
-  "action_type": "PASS"
+  "action_type": "PASS",
+  "card_name": null,
+  "target_players": null,
+  "target_property_set": null,
+  "rent_color": null,
+  "double_the_rent_count": null,
+  "forced_deal_source_property_info": null,
+  "forced_or_sly_deal_target_property_info": null
 }
-```
 
 ---
 

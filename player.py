@@ -178,10 +178,10 @@ class Player(ABC): # Inherit from ABC
         return hash(self.name)
     
     @abstractmethod
-    def provide_payment(self, reason: str, amount: int) -> List[Card]:
+    def provide_payment(self, reason: str, amount: int, game_state_dict: dict) -> List[Card]:
         pass
 
     @abstractmethod
-    def wants_to_negate(self) -> Optional[Card]:
+    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict) -> Optional[Card]:
         pass
         

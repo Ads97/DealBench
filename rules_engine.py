@@ -52,6 +52,14 @@ class RulesEngine:
         if action.card.get_card_type() not in [CardType.PROPERTY, CardType.PROPERTY_WILD]:
             print(f"Validation Error: {action.card.name} is not a property card.")
             return False
+        if action.card.get_card_type() == CardType.PROPERTY_WILD:
+            if action.target_property_set not in action.card.available_colors:
+                print(f"Validation Error: {action.card} cannot represent {action.target_property_set}.")
+                return False
+        else:
+            if action.target_property_set != action.card.set_color:
+                print(f"Validation Error: {action.card} cannot represent {action.target_property_set}.")
+                return False
         return True
     
     @staticmethod

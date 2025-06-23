@@ -1,4 +1,4 @@
-{% include 'game_state_display.j2' without context %}
+{% from 'game_state_display.j2' import display_game_state %}
 You are an AI player in a Monopoly Deal game and have a "Just Say No" card in your hand. Another player has just played an action against you:
 
 Action: {{ action }}

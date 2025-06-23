@@ -9,7 +9,7 @@ import random
 import sys
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1_0528, meta_maverick
+from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -84,7 +84,11 @@ class Game:
             print(f"{player.name} has played {self.actions_played}/{ACTIONS_PER_TURN} actions.")
 
             # Get action from player
-            action: Action = player.get_action(self.to_json())
+            try:
+                action: Action = player.get_action(self.to_json())
+            except Exception as e:
+                print(f"Error in getting action! player {player.name} {e}. Skipping their turn")
+                action = Action(action_type=ActionType.PASS, source_player=player)
 
             if action.action_type == ActionType.PASS: # Player chose to end turn
                 print(f"{player.name} has chosen to end their action phase.")
@@ -236,10 +240,10 @@ class Game:
         if self._attempt_just_say_no(source_player, target_player):
             print(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
-        payment_cards = target_player.provide_payment(reason=reason,amount=amount)
+        payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
         actual_amount_paid = sum(card.value for card, _ in payment_cards)
         while not self.rules_engine.validate_rent_payment(payment_cards):
-            payment_cards = target_player.provide_payment(reason=reason,amount=amount)
+            payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
             actual_amount_paid = sum(card.value for card, _ in payment_cards)
         print(f"{target_player.name} paid {actual_amount_paid}M ({amount}M requested) to {source_player.name} with cards {payment_cards} for {reason}.")
         for card, source in payment_cards:
@@ -355,7 +359,7 @@ class Game:
         jsn_played = False
 
         while True:
-            jsn_action = current.wants_to_negate([other.name])
+            jsn_action = current.wants_to_negate([other.name], self.to_json())
             if jsn_action is None:
                 break
             if self.rules_engine.validate_action(jsn_action, current, [other], None):
@@ -539,7 +543,7 @@ class TestPlayer(Player):
         cards_to_discard = random.sample(self.hand,num_cards_to_discard)
         return cards_to_discard
     
-    def provide_payment(self, reason: str, amount: int):
+    def provide_payment(self, reason: str, amount: int, game_state_dict: dict):
         bank_value = sum(card.value for card in self.bank)
         if bank_value >= amount:
             payment = []
@@ -562,7 +566,7 @@ class TestPlayer(Player):
                         return payment
         return payment
     
-    def wants_to_negate(self, target_player_names: List[str]) -> Optional[Action]:
+    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict) -> Optional[Action]:
         for card in self.hand:
             if card.get_card_type() == CardType.ACTION_JUST_SAY_NO:
                 return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)
@@ -574,7 +578,9 @@ if __name__ == "__main__":
     players = [
         TestPlayer(name="Alice"),
         # TestPlayer(name="Bob"),
-        meta_maverick
+        # meta_maverick,
+        # gpt_4_1_nano,
+        deepseek_r1_0528
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

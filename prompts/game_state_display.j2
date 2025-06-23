@@ -7,13 +7,13 @@ Game state:
 
 Your current game state:
 {%- set current_player_obj = game_state.players | selectattr('name', 'equalto', game_state.current_player_name) | first %}
-- Hand: {{ current_player.hand | map(attribute='name') | list }}
+ - Hand: {{ current_player.hand | map(attribute='to_json') | list }}
 - Bank: {{ current_player_obj.banked_cards | map(attribute='name') | list }} (Total value: {{ current_player_obj.bank_value }})
 - Property Sets:
 {% if current_player_obj.property_sets %}
   {% for color, prop_set in current_player_obj.property_sets.items() %}
   - {{ color.name if color is string else color }}: 
-    Cards: {{ prop_set.cards | map(attribute='name') | list }}
+    Cards: {{ prop_set.cards | map(attribute='to_json') | list }}
     Full Set: {{ prop_set.is_full_set }}
     House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
     Rent: {{ prop_set.rent }}
@@ -31,7 +31,7 @@ Other players:
     {% if player.property_sets %}
       {% for color, prop_set in player.property_sets.items() %}
     - {{ color.name if color is string else color }}:
-        Cards: {{ prop_set.cards | map(attribute='name') | list }}
+        Cards: {{ prop_set.cards | map(attribute='to_json') | list }}
         Full Set: {{ prop_set.is_full_set }}
         House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
         Rent: {{ prop_set.rent }}

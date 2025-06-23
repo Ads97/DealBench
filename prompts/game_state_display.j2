@@ -1,3 +1,7 @@
+{% macro render_card(card) -%}
+{{ card.to_json().items() | map('join', ': ') | join(', ') }}
+{%- endmacro %}
+
 {% macro display_game_state(game_state, actions_per_turn, current_player) %}
 Game state:
 - Current player: You ({{ game_state.current_player_name }})
@@ -6,14 +10,35 @@ Game state:
 - Actions played in current turn: {{ game_state.actions_played_in_current_turn }} / {{ actions_per_turn }}
 
 Your current game state:
-{%- set current_player_obj = game_state.players | selectattr('name', 'equalto', game_state.current_player_name) | first %}
- - Hand: {{ current_player.hand | map(attribute='to_json') | list }}
-- Bank: {{ current_player_obj.banked_cards | map(attribute='name') | list }} (Total value: {{ current_player_obj.bank_value }})
+- {%- set current_player_obj = game_state.players | selectattr('name', 'equalto', game_state.current_player_name) | first %}
+- Hand:
+{% if current_player.hand %}
+{% for card in current_player.hand %}
+  - {{ render_card(card) }}
+{% endfor %}
+{% else %}
+  None.
+{% endif %}
+- Bank (Total value: {{ current_player_obj.bank_value }}):
+{% if current_player_obj.banked_cards %}
+{% for card in current_player_obj.banked_cards %}
+  - {{ render_card(card) }}
+{% endfor %}
+{% else %}
+  None.
+{% endif %}
 - Property Sets:
 {% if current_player_obj.property_sets %}
   {% for color, prop_set in current_player_obj.property_sets.items() %}
-  - {{ color.name if color is string else color }}: 
-    Cards: {{ prop_set.cards | map(attribute='to_json') | list }}
+  - {{ color.name if color is string else color }}:
+    Cards:
+    {% if prop_set.cards %}
+    {% for card in prop_set.cards %}
+      - {{ render_card(card) }}
+    {% endfor %}
+    {% else %}
+      None.
+    {% endif %}
     Full Set: {{ prop_set.is_full_set }}
     House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
     Rent: {{ prop_set.rent }}
@@ -26,12 +51,26 @@ Other players:
 {% for player in game_state.players %}
   {% if player.name != game_state.current_player_name %}
 - {{ player.name }}:
-  - Bank: {{ player.banked_cards | map(attribute='name') | list }} (Total value: {{ player.bank_value }})
+  - Bank (Total value: {{ player.bank_value }}):
+    {% if player.banked_cards %}
+    {% for card in player.banked_cards %}
+      - {{ render_card(card) }}
+    {% endfor %}
+    {% else %}
+      None.
+    {% endif %}
   - Property Sets:
     {% if player.property_sets %}
       {% for color, prop_set in player.property_sets.items() %}
     - {{ color.name if color is string else color }}:
-        Cards: {{ prop_set.cards | map(attribute='to_json') | list }}
+        Cards:
+        {% if prop_set.cards %}
+        {% for card in prop_set.cards %}
+          - {{ render_card(card) }}
+        {% endfor %}
+        {% else %}
+          None.
+        {% endif %}
         Full Set: {{ prop_set.is_full_set }}
         House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
         Rent: {{ prop_set.rent }}

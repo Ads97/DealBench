@@ -105,6 +105,29 @@ class LLMHandler():
                         "additionalProperties": False
                     }
                 }}
+            case "discard":
+                json_template = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "discard",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "reasoning": {
+                                    "type": "string",
+                                    "description": "Reasoning on what cards you want to discard from your hand."
+                                },
+                                "card_names": {
+                                    "type": "string",
+                                    "description": "A list of card names to discard from your hand (names should be exact)."
+                                }
+                            },
+                            "required": ["reasoning", "card_names"],
+                            "additionalProperties": False
+                        }
+                    }
+                }
         return json_template
 
     def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Dict[str, Any]:

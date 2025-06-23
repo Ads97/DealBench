@@ -1,15 +1,12 @@
 {% from 'game_state_display.j2' import display_game_state %}
-You are an AI player in a Monopoly Deal game and need to discard {{ num_cards_to_discard }} cards.
+You are an AI player in a Monopoly Deal game and need to discard {{ num_cards_to_discard }} cards from your hand only.
 
 {{ display_game_state(game_state, actions_per_turn, player) }}
 
-Choose {{ num_cards_to_discard }} cards to discard. Prioritize cards that are less useful for your current strategy. Consider:
-1. Excess money cards if you already have enough
-2. Properties that don't fit your current sets
-3. Action cards that are less useful in the current game state
+Choose {{ num_cards_to_discard }} cards to discard from your hand.
 
-Your response should be a JSON array of card names to discard, for example:
-[
-  "Card Name 1",
-  "Card Name 2"
-]
+Your response must be a JSON object with 'reasoning' and 'card_names' fields, for example:
+{
+  "reasoning": "I'm discarding these cards because...",
+  "card_names": ["Card Name 1", "Card Name 2"]
+}

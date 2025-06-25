@@ -244,9 +244,10 @@ class RulesEngine:
     
     @staticmethod
     def _validate_birthday(action: Action) -> bool:
-        if len(action.target_player_names) > 0:
-            print(f"Validation Error: Birthday cannot have target players. {action}")
-            return False
+        # relax birthday target player checking
+        # if len(action.target_player_names) > 0:
+        #     print(f"Validation Error: Birthday cannot target a specific player. {action}")
+        #     return False
         if action.target_property_set is not None:
             print(f"Validation Error: Birthday cannot have target property set. {action}")
             return False

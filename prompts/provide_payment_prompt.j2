@@ -7,16 +7,10 @@ Payment rules:
 1. You must pay the exact amount if possible
 2. You can use any combination of money cards from your bank and property cards from your property sets
 
-Your response MUST be a JSON array of card names to use for payment, for example:
-[
-  {
-    "name": "card name 1",
-    "source": "bank",
-  },
-  {
-    "name": "card name 2",
-    "source": "properties",
-  }
-]
+Your response MUST be a JSON array with reasoning and a tuple of card names (exact) and source (bank or properties) to use for payment, for example:
+{
+  "reasoning": "Reasoning on the cards you want to use to pay.",
+  "payment": "[(card_name_1, bank), (card_name_2, properties)]"
+}
 
-If you have absolutely no bank or property cards to pay with, return an empty array []
+If you have absolutely no bank or property cards to pay with, return an empty array [] for "payment". If the sum total of your bank and property cards is less than the amount you need to pay, return all your bank and property cards in "payment".

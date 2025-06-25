@@ -1,9 +1,9 @@
 {% from 'game_state_display.j2' import display_game_state %}
-You are an AI player in a Monopoly Deal game and need to discard {{ num_cards_to_discard }} cards from your hand only.
+You are an AI player in a Monopoly Deal game and need to discard exactly {{ num_cards_to_discard }} cards from your hand now.
 
 {{ display_game_state(game_state, actions_per_turn, player) }}
 
-Choose {{ num_cards_to_discard }} cards to discard from your hand.
+Choose the {{ num_cards_to_discard }} cards to discard from your hand.
 
 Your response must be a JSON object with 'reasoning' and 'card_names' fields, for example:
 {

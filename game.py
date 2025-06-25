@@ -580,7 +580,8 @@ if __name__ == "__main__":
         # TestPlayer(name="Bob"),
         # meta_maverick,
         # gpt_4_1_nano,
-        deepseek_r1_0528
+        deepseek_r1_0528,
+        # qwen3_235b
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

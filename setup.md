@@ -5,7 +5,7 @@ Monopoly Deal requirements:
 
 3 types of cards:
 1. Action Cards. 
-1a. rent cards. have 2 colours on them. Choose one of the colours shown on the card and collect rent based on what the card says.  
+1a. rent cards. have 2 colours on them. Choose one of the colours shown on the card and collect rent based on what the card says. Rent can only be collected on properties you own (not on other players properties). 
 1b. double the rent cards. can be paired with any rent card. must be played at the same time as a rent cad, and it counts as one of the three cards you may play on your turn. Collect double rent!
 1c. house and hotel cards. add to a complete property set. cannot be placed on railroads and utilities. discarded if the property set they are on becomes incomplete. hotel can only be placed if there's already a house on it. (you collect rent for hotel and house separately.). A property set may have only one of each. 
 1d. Just say no cards. can be used even when its not your turn. cancels action cards played against you. Impacts only you, not any other player. If another player uses a just say no card too, then yours is cancelled. If played during your turn, counts towards on your three actions. 

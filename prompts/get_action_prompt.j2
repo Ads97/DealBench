@@ -1,5 +1,5 @@
 {% from 'game_state_display.j2' import display_game_state %}
-You are an AI player in a game of Agent Deal. Your goal is to win by collecting 3 full property sets of different colors. 
+You are an AI player in a game of Agent Deal. Your goal is to win by collecting 3 full property sets of different colors. It is currently your turn. Choose 1 card that you would like to play. Remember, you must play ONLY ONE CARD in this turn.
 
 {{ display_game_state(game_state, actions_per_turn, player) }}
 
@@ -76,7 +76,7 @@ Your response **must** be a single JSON object describing the action you will ta
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Rent (Pink/Orange)",
-  "target_players": "['Alice', 'Bob']",
+  "target_players": ['Alice', 'Bob'],
   "target_property_set": null,
   "rent_color": "PINK",
   "double_the_rent_count": 1,
@@ -89,7 +89,7 @@ Your response **must** be a single JSON object describing the action you will ta
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Sly Deal",
-  "target_players": "['Alice']",
+  "target_players": ['Alice'],
   "target_property_set": null,
   "rent_color": null,
   "double_the_rent_count": null,
@@ -105,7 +105,7 @@ Your response **must** be a single JSON object describing the action you will ta
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Forced Deal",
-  "target_players": "['Alice']",
+  "target_players": ['Alice'],
   "target_property_set": null,
   "rent_color": null,
   "double_the_rent_count": null,
@@ -124,7 +124,7 @@ Your response **must** be a single JSON object describing the action you will ta
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Deal Breaker",
-  "target_players": "['Alice']",
+  "target_players": ['Alice'],
   "target_property_set": "BLUE",
   "rent_color": null,
   "double_the_rent_count": null,
@@ -148,7 +148,7 @@ Your response **must** be a single JSON object describing the action you will ta
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "It's My Birthday",
-  "target_players": "['Alice', 'Bob']",
+  "target_players": ['Alice', 'Bob'],
   "target_property_set": null,
   "rent_color": null,
   "double_the_rent_count": null,
@@ -159,7 +159,7 @@ Your response **must** be a single JSON object describing the action you will ta
   "reasoning": "One line reasoning on what action you should choose",
   "action_type": "PLAY_ACTION",
   "card_name": "Debt Collector",
-  "target_players": "['Alice']",
+  "target_players": ['Alice'],
   "target_property_set": null,
   "rent_color": null,
   "double_the_rent_count": null,
@@ -183,11 +183,10 @@ Your response **must** be a single JSON object describing the action you will ta
 ---
 
 # Guidance
-- Only include fields relevant to the action you are taking. Do not include unnecessary fields.
-- For advanced actions (Sly Deal, Forced Deal, Deal Breaker), you must specify the correct property info objects as shown above.
+- Only include fields relevant to the action you are taking. Fill the rest with 'null'.
 - Always use the exact card name as it appears in your hand or properties.
 - For Rent, specify rent_color and double_the_rent_count if using Double the Rent cards.
 - For actions targeting other players or property sets, always specify the correct player names and property set colors.
 - If you are unsure, refer to the above examples.
 
-Choose the best action based on the current game state. Your response must be a single JSON object in the above format.
+Choose the one best card to play based on the current game state. Your response must be a single JSON object in the above format.

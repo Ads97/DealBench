@@ -10,6 +10,8 @@ from action import Action, ActionType, ActionPropertyInfo
 from card import Card, PropertyColor, CardType
 from deck_config import ACTIONS_PER_TURN
 import sys 
+from requests.exceptions import RequestException
+import time 
 
 load_dotenv()
 
@@ -31,7 +33,7 @@ class LLMHandler():
         template = self.template_env.get_template(template_name)
         return template.render(**kwargs)
     
-    def _get_structured_output_format(self, format):
+    def _get_structured_output_format(self, format, **kwargs):
         match format:
             case "action":
                 json_template = {
@@ -55,8 +57,11 @@ class LLMHandler():
                                 "description": "(optional field) The name of the card to play, if necessary (should be exact)."
                             },  
                             "target_players": {
-                                "type": "string",
-                                "description": "(optional field) List of player names to target in python list format (e.g. ['Alice', 'Bob']) if necessary"
+                                "type": "array",
+                                "items": {
+                                    "type": "string",
+                                    "description": "The name of the player to target (should be exact)."
+                                },
                             },
                             "target_property_set": {
                                 "type": "string",
@@ -119,11 +124,53 @@ class LLMHandler():
                                     "description": "Reasoning on what cards you want to discard from your hand."
                                 },
                                 "card_names": {
-                                    "type": "string",
-                                    "description": "A list of card names to discard from your hand (names should be exact)."
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "description": "The name of the card to discard from your hand (name should be exact)."
+                                    },
+                                    "minItems": kwargs["num_cards_to_discard"],
+                                    "maxItems": kwargs["num_cards_to_discard"],
                                 }
                             },
                             "required": ["reasoning", "card_names"],
+                            "additionalProperties": False
+                        }
+                    }
+                }
+            case "payment":
+                json_template = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "provide_payment",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "reasoning": {
+                                    "type": "string",
+                                    "description": "Reasoning on the cards you want to use to pay."
+                                },
+                                "payment": {
+                                    "type": "array",
+                                    "items":{
+                                        "type": "object",
+                                        "properties":{
+                                            "card_name": {
+                                                "type": "string",
+                                                "description": "The name of the card to use to pay (name should be exact)."
+                                            },
+                                            "source": {
+                                                "type": "string",
+                                                "description": "Where the card belongs. One of 'bank' or 'properties'."
+                                            }
+                                        },
+                                        "required": ["card_name", "source"],
+                                        "additionalProperties": False
+                                    },
+                                }
+                            },
+                            "required": ["reasoning", "payment"],
                             "additionalProperties": False
                         }
                     }
@@ -146,17 +193,40 @@ class LLMHandler():
         payload = {
             "model": self.model_name,
             "messages": [system_message, {"role": "user", "content": prompt}],
-            "temperature": 0.7,
-            "response_format": self._get_structured_output_format(response_format),
+            "temperature": 0.0,
+            "response_format": self._get_structured_output_format(response_format, **template_kwargs),
             "structured_outputs": True,
             # "max_tokens": 1000
         }
-        response = requests.post(self.url, headers=headers, json=payload)
-        response.raise_for_status()
-        print(f"Response status: {response.status_code}")
-        print(f"Response headers: {response.headers}")
-        print(f"Response content: {response.text}")
-        return self._extract_json(response)
+        max_retries = 3          # total attempts = 1 original + 2 retries
+        backoff_base = 1.0       # seconds; grows exponentially
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = requests.post(self.url, headers=headers, json=payload)
+                # If the status isn’t 500, raise_for_status() will do the right thing
+                if response.status_code != 500:
+                    response.raise_for_status()
+                    print(f"Response status: {response.status_code}")
+                    print(f"Response headers: {response.headers}")
+                    print(f"Response content: {response.text}")
+                    return self._extract_json(response)
+
+                # We got a 500 – decide whether to retry.
+                print(f"Attempt {attempt}: received 500 from server.")
+                if attempt == max_retries:
+                    response.raise_for_status()   # will raise HTTPError
+            except RequestException as err:
+                # Covers network errors as well as HTTPError from raise_for_status()
+                # Only retry on the specific 500 case handled above; otherwise bubble up.
+                if not getattr(err.response, "status_code", None) == 500:
+                    raise
+
+            # Exponential back-off before the next retry
+            sleep_time = backoff_base * (2 ** (attempt - 1))
+            time.sleep(sleep_time)
+        
+        raise RuntimeError("call_llm: exhausted retries and still receiving HTTP 500s")
 
 
 
@@ -166,6 +236,76 @@ class LLMPlayer(Player, LLMHandler):
         LLMHandler.__init__(self, model_name)
         self.model_name = model_name
 
+    @staticmethod
+    def convert_to_none(string):
+        if not string:
+            return None
+        if type(string) != str:
+            return string
+        if string.lower() == "null":
+            return None
+        elif string == "":
+            return None
+        elif string == "[]":
+            return None
+        return string
+            
+    def convert_json_to_action(self, response: dict) -> Optional[Action]:
+        action_type_str = self.convert_to_none(response['action_type'])
+
+        try:
+            action_type = ActionType[action_type_str]
+        except KeyError:
+            raise ValueError(f"Invalid action_type '{action_type_str}'")
+
+        card = None
+        card_name = self.convert_to_none(response.get('card_name'))
+        if action_type != ActionType.PASS:
+            if not card_name:
+                raise ValueError("'card_name' required for non-PASS actions")
+            if action_type == ActionType.MOVE_PROPERTY:
+                for pset in self.property_sets.values():
+                    if pset.has_card(card_name):
+                        card = pset.get_card(card_name)
+                        break
+                if not card:
+                    raise ValueError(f"Card {card_name} not found in properties")
+            else:
+                card = next((c for c in self.hand if c.name == card_name), None)
+            if not card:
+                raise ValueError(f"Card {card_name} not found in hand")
+
+        def build_info(data):
+            if not data:
+                return None
+            name = self.convert_to_none(data.get("name"))
+            prop_color = self.convert_to_none(data.get("prop_color"))
+            if not prop_color or not name:
+                return None
+            return ActionPropertyInfo(name=name, prop_color=PropertyColor[prop_color])
+
+        double_the_rent_count = self.convert_to_none(response.get('double_the_rent_count'))
+        if double_the_rent_count is None:
+            double_the_rent_count = 0
+
+        target_property_set = self.convert_to_none(response.get('target_property_set'))
+        if target_property_set:
+            target_property_set = PropertyColor[target_property_set]
+        rent_color = self.convert_to_none(response.get('rent_color'))
+        if rent_color:
+            rent_color = PropertyColor[rent_color]
+        return Action(
+            action_type=action_type,
+            source_player=self,
+            card=card,
+            target_player_names=self.convert_to_none(response.get('target_players', [])),
+            target_property_set=target_property_set,
+            rent_color=rent_color,
+            double_the_rent_count=double_the_rent_count,
+            forced_deal_source_property_info=build_info(response.get('forced_deal_source_property_info')),
+            forced_or_sly_deal_target_property_info=build_info(response.get('forced_or_sly_deal_target_property_info'))
+        )
+    
     def get_action(self, game_state_dict: dict) -> Optional[Action]:
         """Get the next action from the LLM."""
         response = self.call_llm(
@@ -181,46 +321,7 @@ class LLMPlayer(Player, LLMHandler):
         if 'action_type' not in response:
             raise ValueError("LLM response missing 'action_type'")
 
-        action_type_str = response['action_type']
-
-        try:
-            action_type = ActionType[action_type_str]
-        except KeyError:
-            raise ValueError(f"Invalid action_type '{action_type_str}'")
-
-        card = None
-        card_name = response.get('card_name')
-        if action_type != ActionType.PASS:
-            if not card_name:
-                raise ValueError("'card_name' required for non-PASS actions")
-            card = next((c for c in self.hand if c.name == card_name), None)
-            if not card:
-                raise ValueError(f"Card {card_name} not found in hand")
-
-        def build_info(data):
-            if not data:
-                return None
-            if not data["prop_color"] or not data["name"]:
-                return None
-            name = data["name"]
-            prop_color = data["prop_color"]
-            return ActionPropertyInfo(name=name, prop_color=PropertyColor[prop_color])
-
-        double_the_rent_count = response.get('double_the_rent_count')
-        if double_the_rent_count is None:
-            double_the_rent_count = 0
-
-        return Action(
-            action_type=action_type,
-            source_player=self,
-            card=card,
-            target_player_names=response.get('target_players', []),
-            target_property_set=PropertyColor[response.get('target_property_set')] if response.get('target_property_set') else None,
-            rent_color=response.get('rent_color'),
-            double_the_rent_count=double_the_rent_count,
-            forced_deal_source_property_info=build_info(response.get('forced_deal_source_property_info')),
-            forced_or_sly_deal_target_property_info=build_info(response.get('forced_or_sly_deal_target_property_info'))
-        )
+        return self.convert_json_to_action(response)
 
     def choose_cards_to_discard(self, num_cards_to_discard: int, game_state_dict: dict) -> List[Card]:
         """Choose cards to discard using the LLM."""
@@ -253,11 +354,10 @@ class LLMPlayer(Player, LLMHandler):
                 actions_per_turn=ACTIONS_PER_TURN
             )
             
-            # Response should be a list of dicts: {"name": ..., "source": ...}
             payment_cards = []
-            for item in response:
-                card_name = item.get("name")
-                source = item.get("source")
+            for item in response['payment']:
+                card_name = item['card_name']
+                source = item['source']
                 card = None
                 if source == "bank":
                     card = next((c for c in self.bank if c.name == card_name), None)
@@ -278,6 +378,7 @@ class LLMPlayer(Player, LLMHandler):
 
     def wants_to_negate(self, action: Action, game_state_dict: dict) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
+        return None # keeping complexity low for now
         # Check if we have a Just Say No card
         just_say_no_count = len([c for c in self.hand if c.get_card_type() == CardType.ACTION_JUST_SAY_NO])
         if not just_say_no_count:
@@ -310,5 +411,8 @@ gpt_4_1_mini = LLMPlayer(model_name="openai/gpt-4.1-mini-2025-04-14")
 
 if __name__ == "__main__":
 
-    handler = LLMHandler(model_name="openai/gpt-4.1-mini-2025-04-14")
-    handler.call_llm("test.j2", response_format="action")
+    handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
+    # handler.call_llm("test_action.j2", response_format="action")
+    # handler.call_llm("test_payment.j2", response_format="payment")
+    handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)
+    # handler.call_llm("test_negate.j2", response_format="negate")

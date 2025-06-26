@@ -295,9 +295,6 @@ class RulesEngine:
         if len(target_players) != 1:
             print(f"Validation Error: Sly Deal must have exactly one target player. Found {action}")
             return False
-        if action.target_property_set is not None:
-            print(f"Validation Error: Sly Deal should not specify target property set. {action}")
-            return False
         if not target_players[0].has_card(action.forced_or_sly_deal_target_property_info.name):
             print(f"Validation Error: Sly Deal target property not found in target player. {action}")
             return False
@@ -321,9 +318,6 @@ class RulesEngine:
     def _validate_forced_deal(action: Action, player: Player, target_players: List[Player]) -> bool:
         if len(target_players) != 1:
             print(f"Validation Error: Forced Deal must have exactly one target player. Found {action}")
-            return False
-        if action.target_property_set is not None:
-            print(f"Validation Error: Forced Deal should not specify target property set. {action}")
             return False
         print(f"{action.forced_or_sly_deal_target_property_info}")
         target_property_card = target_players[0].get_card_from_properties(action.forced_or_sly_deal_target_property_info)

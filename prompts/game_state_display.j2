@@ -4,7 +4,7 @@
 
 {% macro display_game_state(game_state, actions_per_turn, current_player) %}
 Game state:
-- Current player: You ({{ game_state.current_player_name }})
+- Current player Turn: {{ game_state.current_player_name }}
 - Players: {{ game_state.players | map(attribute='name') | list }}
 - Turn count: {{ game_state.turns_completed_in_game }}
 - Actions played in current turn: {{ game_state.actions_played_in_current_turn }} / {{ actions_per_turn }}

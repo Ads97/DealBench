@@ -73,7 +73,7 @@ class LLMHandler():
                             },
                             "double_the_rent_count": {
                                 "type": "integer",
-                                "description": "(optional field) Number of Double the Rent cards to play with a Rent card (each consumes an action) if necessary"
+                                "description": "Number of Double the Rent cards (0-2) to play with a Rent card (each consumes an action) if necessary. 0 if not applicable"
                             },
                             "forced_deal_source_property_info": {
                                 "type": "object",
@@ -196,10 +196,10 @@ class LLMHandler():
             "temperature": 0.0,
             "response_format": self._get_structured_output_format(response_format, **template_kwargs),
             "structured_outputs": True,
-            "thinking": {
-                "type": "enabled",
-                "budget_tokens": 500
-            },
+            # "thinking": {
+            #     "type": "enabled",
+            #     "budget_tokens": 500
+            # },
             # "max_tokens": 1000
         }
         max_retries = 3          # total attempts = 1 original + 2 retries
@@ -207,7 +207,7 @@ class LLMHandler():
 
         for attempt in range(1, max_retries + 1):
             try:
-                response = requests.post(self.url, headers=headers, json=payload)
+                response = requests.post(self.url, headers=headers, data=json.dumps(payload))
                 # If the status isn’t 500, raise_for_status() will do the right thing
                 if response.status_code != 500:
                     response.raise_for_status()
@@ -413,11 +413,13 @@ gemini_2_5_pro_experimental = LLMPlayer(model_name="google/gemini-2.5-pro-exp-03
 gpt_4_1_nano = LLMPlayer(model_name="openai/gpt-4.1-nano-2025-04-14")
 gpt_4_1_mini = LLMPlayer(model_name="openai/gpt-4.1-mini-2025-04-14")
 claude_4_sonnet = LLMPlayer(model_name="anthropic/claude-4-sonnet-20250522")
+openai_o4_mini = LLMPlayer(model_name="openai/o4-mini")
 
 if __name__ == "__main__":
 
     # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
-    handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
+    # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
+    handler = LLMHandler(model_name="openai/o4-mini")
     handler.call_llm("test_action.j2", response_format="action")
     # handler.call_llm("test_payment.j2", response_format="payment")
     # handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)

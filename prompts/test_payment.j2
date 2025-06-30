@@ -1,25 +1,27 @@
-You are AI player (Alice) in a Monopoly Deal game and need to pay 2M for the following reason: birthday
+You are AI player (deepseek/deepseek-r1-0528:free) in a Monopoly Deal game and need to pay 2M for the following reason: birthday
 
 
 Game state:
-- Current player: You (Alice)
-- Players: ['Alice', 'deepseek/deepseek-r1-0528:free']
-- Turn count: 0
-- Actions played in current turn: 2 / 3
+- Current player Turn: Alice
+- Players: ['deepseek/deepseek-r1-0528:free', 'Alice']
+- Turn count: 1
+- Actions played in current turn: 1 / 3
 
 Your current game state:
 - Hand:
 
 
-- - name: Luxury Lane, value: 4, type: PROPERTY, set_color: DARK_BLUE, rent_values: [3, 8], num_properties_for_full_set: 2
+- - name: Violet Ave, value: 2, type: PROPERTY, set_color: PINK, rent_values: [1, 2, 4], num_properties_for_full_set: 3
 
-- - name: Just Say No!, value: 4, type: ACTION_JUST_SAY_NO
+- - name: Forest Rd, value: 4, type: PROPERTY, set_color: GREEN, rent_values: [2, 4, 7], num_properties_for_full_set: 3
 
-- - name: Wild (Yellow/Red), value: 3, type: PROPERTY_WILD, available_colors: ['YELLOW', 'RED'], current_color: None
+- - name: $4M, value: 4, type: MONEY
 
-- - name: Wild (Utility/Railroad), value: 2, type: PROPERTY_WILD, available_colors: ['UTILITY', 'RAILROAD'], current_color: None
+- - name: $1M, value: 1, type: MONEY
 
-- - name: Property Wildcard (Any Color), value: 0, type: PROPERTY_WILD, available_colors: ['BROWN', 'LIGHT_BLUE', 'PINK', 'ORANGE', 'RED', 'YELLOW', 'GREEN', 'DARK_BLUE', 'RAILROAD', 'UTILITY'], current_color: None
+- - name: $2M, value: 2, type: MONEY
+
+- - name: Sly Deal, value: 3, type: ACTION_SLY_DEAL
 
 
 - Bank (Total value: 0):
@@ -28,7 +30,20 @@ Your current game state:
 
 - Property Sets:
 
- None.
+  
+  - YELLOW:
+    Cards:
+    
+    
+      - name: Wild (Yellow/Red), value: 3, type: PROPERTY_WILD, available_colors: ['YELLOW', 'RED'], current_color: YELLOW
+    
+      - name: Sunshine Way, value: 3, type: PROPERTY, set_color: YELLOW, rent_values: [2, 4, 6], num_properties_for_full_set: 3
+    
+    
+    Full Set: False
+    House: False, Hotel: False
+    Rent: 
+  
 
 
 Other players:
@@ -36,14 +51,25 @@ Other players:
   
 
   
-- deepseek/deepseek-r1-0528:free:
+- Alice:
   - Bank (Total value: 0):
     
     None.
     
   - Property Sets:
     
-      None.
+      
+    - PropertyColor.GREEN:
+        Cards:
+        
+        
+        - name: Wild (Dk.Blue/Green), value: 4, type: PROPERTY_WILD, available_colors: ['DARK_BLUE', 'GREEN'], current_color: GREEN
+        
+        
+        Full Set: False
+        House: False, Hotel: False
+        Rent: 2
+      
     
   
 
@@ -60,3 +86,4 @@ Your response MUST be a JSON array with reasoning and a tuple of card names (exa
 }
 
 If you have absolutely no bank or property cards to pay with, return an empty array [] for "payment". If the sum total of your bank and property cards is less than the amount you need to pay, return all your bank and property cards in "payment".
+

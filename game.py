@@ -416,11 +416,6 @@ class TestPlayer(Player):
                     Action(source_player=self, card=card,
                         action_type=ActionType.ADD_TO_PROPERTIES)
                 )
-                if random.random() < 0.2:
-                    valid_actions.append(
-                        Action(source_player=self, card=card,
-                            action_type=ActionType.ADD_TO_BANK)
-                    )
             
             elif isinstance(card, BuildingCard):
                 full_sets = [(color, property_set) for color, property_set in property_sets.items() if property_set.is_full_set]

@@ -196,6 +196,10 @@ class LLMHandler():
             "temperature": 0.0,
             "response_format": self._get_structured_output_format(response_format, **template_kwargs),
             "structured_outputs": True,
+            "thinking": {
+                "type": "enabled",
+                "budget_tokens": 500
+            },
             # "max_tokens": 1000
         }
         max_retries = 3          # total attempts = 1 original + 2 retries
@@ -408,11 +412,13 @@ gemma3_27b = LLMPlayer(model_name="google/gemma-3-27b-it:free")
 gemini_2_5_pro_experimental = LLMPlayer(model_name="google/gemini-2.5-pro-exp-03-25") #think its free?
 gpt_4_1_nano = LLMPlayer(model_name="openai/gpt-4.1-nano-2025-04-14")
 gpt_4_1_mini = LLMPlayer(model_name="openai/gpt-4.1-mini-2025-04-14")
+claude_4_sonnet = LLMPlayer(model_name="anthropic/claude-4-sonnet-20250522")
 
 if __name__ == "__main__":
 
-    handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
-    # handler.call_llm("test_action.j2", response_format="action")
+    # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
+    handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
+    handler.call_llm("test_action.j2", response_format="action")
     # handler.call_llm("test_payment.j2", response_format="payment")
-    handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)
+    # handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)
     # handler.call_llm("test_negate.j2", response_format="negate")

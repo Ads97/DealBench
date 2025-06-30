@@ -1,5 +1,62 @@
-This is a test. Respond with this object exactly:
+You are AI player (Alice) in a Monopoly Deal game and need to pay 2M for the following reason: birthday
+
+
+Game state:
+- Current player: You (Alice)
+- Players: ['Alice', 'deepseek/deepseek-r1-0528:free']
+- Turn count: 0
+- Actions played in current turn: 2 / 3
+
+Your current game state:
+- Hand:
+
+
+- - name: Luxury Lane, value: 4, type: PROPERTY, set_color: DARK_BLUE, rent_values: [3, 8], num_properties_for_full_set: 2
+
+- - name: Just Say No!, value: 4, type: ACTION_JUST_SAY_NO
+
+- - name: Wild (Yellow/Red), value: 3, type: PROPERTY_WILD, available_colors: ['YELLOW', 'RED'], current_color: None
+
+- - name: Wild (Utility/Railroad), value: 2, type: PROPERTY_WILD, available_colors: ['UTILITY', 'RAILROAD'], current_color: None
+
+- - name: Property Wildcard (Any Color), value: 0, type: PROPERTY_WILD, available_colors: ['BROWN', 'LIGHT_BLUE', 'PINK', 'ORANGE', 'RED', 'YELLOW', 'GREEN', 'DARK_BLUE', 'RAILROAD', 'UTILITY'], current_color: None
+
+
+- Bank (Total value: 0):
+
+  None.
+
+- Property Sets:
+
+ None.
+
+
+Other players:
+
+  
+
+  
+- deepseek/deepseek-r1-0528:free:
+  - Bank (Total value: 0):
+    
+    None.
+    
+  - Property Sets:
+    
+      None.
+    
+  
+
+
+
+Payment rules:
+1. You must pay the exact amount if possible
+2. You can use any combination of money cards from your bank and property cards from your property sets
+
+Your response MUST be a JSON array with reasoning and a tuple of card names (exact) and source (bank or properties) to use for payment, for example:
 {
-  "reasoning": "One line reasoning on what action you should choose",
-  "payment": [({"card_name": "card_name_1", "source": "bank"}, {"card_name": "card_name_2", "source": "properties"})]
+  "reasoning": "Reasoning on the cards you want to use to pay.",
+  "payment": "[(card_name_1, bank), (card_name_2, properties)]"
 }
+
+If you have absolutely no bank or property cards to pay with, return an empty array [] for "payment". If the sum total of your bank and property cards is less than the amount you need to pay, return all your bank and property cards in "payment".

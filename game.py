@@ -9,7 +9,7 @@ import random
 import sys
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano
+from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -581,7 +581,8 @@ if __name__ == "__main__":
         # meta_maverick,
         # gpt_4_1_nano,
         deepseek_r1_0528,
-        # qwen3_235b
+        # qwen3_235b,
+        # claude_4_sonnet,
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

@@ -1,5 +1,5 @@
 {% from 'game_state_display.j2' import display_game_state %}
-You are AI player ({{ game_state.current_player_name }}) in a Monopoly Deal game and need to pay {{ amount }}M for the following reason: {{ reason }}
+You are AI player ({{ player.name }}) in a Monopoly Deal game and need to pay {{ amount }}M for the following reason: {{ reason }}
 
 {{ display_game_state(game_state, actions_per_turn, player) }}
 

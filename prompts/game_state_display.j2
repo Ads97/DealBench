@@ -2,7 +2,7 @@
 {{ card.items() | map('join', ': ') | join(', ') }}
 {%- endmacro %}
 
-{% macro display_game_state(game_state, actions_per_turn, current_player) %}
+{% macro display_game_state(game_state, actions_per_turn, perspective_player) %}
 Game state:
 - Current player Turn: {{ game_state.current_player_name }}
 - Players: {{ game_state.players | map(attribute='name') | list }}
@@ -11,24 +11,24 @@ Game state:
 
 Your current game state:
 - Hand:
-{% if current_player.hand %}
-{% for card in current_player.hand %}
+{% if perspective_player.hand %}
+{% for card in perspective_player.hand %}
 - - {{ render_card(card.to_json()) }}
 {% endfor %}
 {% else %}
   None.
 {% endif %}
-- Bank (Total value: {{ current_player.get_bank_value() }}):
-{% if current_player.bank %}
-{% for card in current_player.bank %}
+- Bank (Total value: {{ perspective_player.get_bank_value() }}):
+{% if perspective_player.bank %}
+{% for card in perspective_player.bank %}
 - - {{ render_card(card.to_json()) }}
 {% endfor %}
 {% else %}
   None.
 {% endif %}
 - Property Sets:
-{% if current_player.property_sets %}
-  {% for color, prop_set in current_player.property_sets.items() %}
+{% if perspective_player.property_sets %}
+  {% for color, prop_set in perspective_player.property_sets.items() %}
   - {{ color.name}}:
     Cards:
     {% if prop_set.cards %}
@@ -48,7 +48,7 @@ Your current game state:
 
 Other players:
 {% for player in game_state.players %}
-  {% if player.name != game_state.current_player_name %}
+  {% if player.name != perspective_player.name %}
 - {{ player.name }}:
   - Bank (Total value: {{ player.bank_value }}):
     {% if player.banked_cards %}

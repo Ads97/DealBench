@@ -1,7 +1,7 @@
 Things to check:
 
 1. Retry and pass validation error message to the LLM in the retry request 
-
+2. rmeove all '\n's from prompt 
 
 
 Things to do:

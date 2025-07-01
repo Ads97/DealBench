@@ -83,42 +83,34 @@ class Game:
             # TODO: Display game state to player (hand, properties, bank etc.)
             print(f"{player.name} has played {self.actions_played}/{ACTIONS_PER_TURN} actions.")
 
-            # Get action from player
-            try:
-                action: Action = player.get_action(self.to_json())
-            except Exception as e:
-                print(f"Error in getting action! player {player.name} {e}. Skipping their turn")
-                action = Action(action_type=ActionType.PASS, source_player=player)
+            valid = False
+            error_reason = None
+            attempts = 0
+            while not valid and attempts < 2:
+                if error_reason:
+                    print(f"Invalid action chosen: {error_reason}. Trying again.")
+                try:
+                    action = player.get_action(self.to_json())
+                    target_players = [self._get_player_by_name(n) for n in action.target_player_names]
+                    valid, error_reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
+                    attempts += 1
+                except Exception as e:
+                    error_reason = f"Error in getting action from player {player.name}! Exception: {e}"
+                    valid = False
+                    continue
+            
+            if not valid:
+                print(f"Skipping {player.name}'s action due to invalid actions: {error_reason}")
+                break
 
             if action.action_type == ActionType.PASS: # Player chose to end turn
                 print(f"{player.name} has chosen to end their action phase.")
                 break
 
-            # Validate and Execute Action
-            target_players = [self._get_player_by_name(n) for n in action.target_player_names]
-            valid, reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
-            attempts = 0
-            while not valid and attempts < 2:
-                print(f"Invalid action chosen: {reason}. Trying again.")
-                try:
-                    action = player.get_action(self.to_json())
-                except Exception as e:
-                    print(f"Error in getting action! player {player.name} {e}. Skipping their turn")
-                    action = Action(action_type=ActionType.PASS, source_player=player)
-                    break
-                if action.action_type == ActionType.PASS:
-                    break
-                target_players = [self._get_player_by_name(n) for n in action.target_player_names]
-                valid, reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
-                attempts += 1
-
-            if not valid:
-                print(f"Skipping {player.name}'s action due to invalid inputs: {reason}")
-                break
-
+            # now execute action
             successfully_executed = self.execute(action)
             if action.action_type != ActionType.MOVE_PROPERTY:
-                self.actions_played += 1  # Move property does not count as an action
+                self.actions_played += 1  # Move property does not count towards actions per turn
             if successfully_executed:
                 print(f"Action successful: {action}")
             else:
@@ -127,10 +119,9 @@ class Game:
             if has_won:
                     self.game_winner = player
                     return  # End turn immediately if someone won
-            # print(f"TEMP: Simulating action {actions_played}") # TEMP
 
         # 3. Discard excess cards
-        while player.cards_in_hand > MAX_HAND_SIZE:
+        if player.cards_in_hand > MAX_HAND_SIZE:
             num_cards_to_discard = player.cards_in_hand - MAX_HAND_SIZE
             print(f"{player.name} has more than {MAX_HAND_SIZE} cards! Discard {num_cards_to_discard} cards")
             cards_to_discard = player.choose_cards_to_discard(num_cards_to_discard, self.to_json())

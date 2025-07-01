@@ -95,26 +95,38 @@ class Game:
                 break
 
             # Validate and Execute Action
-            target_players = []
-            for player_name in action.target_player_names:
-                target_players.append(self._get_player_by_name(player_name))            
-            if self.rules_engine.validate_action(action, player, target_players, self.actions_played):
-                successfully_executed = self.execute(action)
-                if action.action_type != ActionType.MOVE_PROPERTY:
-                    self.actions_played += 1 # Move property does not count as an action
-                if successfully_executed:
-                    print(f"Action successful: {action}")
-                else:
-                    print(f"Could not execute action: {action}")
-                # Check win condition immediately if action could cause win (e.g. placing last property)
-                has_won = self.rules_engine.check_win_condition(player)
-                if has_won:
-                        self.game_winner = player
-                        return # End turn immediately if someone won
+            target_players = [self._get_player_by_name(n) for n in action.target_player_names]
+            valid, reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
+            attempts = 0
+            while not valid and attempts < 2:
+                print(f"Invalid action chosen: {reason}. Trying again.")
+                try:
+                    action = player.get_action(self.to_json())
+                except Exception as e:
+                    print(f"Error in getting action! player {player.name} {e}. Skipping their turn")
+                    action = Action(action_type=ActionType.PASS, source_player=player)
+                    break
+                if action.action_type == ActionType.PASS:
+                    break
+                target_players = [self._get_player_by_name(n) for n in action.target_player_names]
+                valid, reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
+                attempts += 1
+
+            if not valid:
+                print(f"Skipping {player.name}'s action due to invalid inputs: {reason}")
+                break
+
+            successfully_executed = self.execute(action)
+            if action.action_type != ActionType.MOVE_PROPERTY:
+                self.actions_played += 1  # Move property does not count as an action
+            if successfully_executed:
+                print(f"Action successful: {action}")
             else:
-                print("Invalid action chosen. Please try again.")
-                print(self.to_json(debug=True))
-                sys.exit(1)
+                print(f"Could not execute action: {action}")
+            has_won = self.rules_engine.check_win_condition(player)
+            if has_won:
+                    self.game_winner = player
+                    return  # End turn immediately if someone won
             # print(f"TEMP: Simulating action {actions_played}") # TEMP
 
         # 3. Discard excess cards
@@ -242,10 +254,17 @@ class Game:
             print(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
         payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
-        actual_amount_paid = sum(card.value for card, _ in payment_cards)
-        while not self.rules_engine.validate_rent_payment(payment_cards):
+        valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
+        attempts = 0
+        while not valid and attempts < 2:
+            print(f"Invalid payment: {reason_msg}. Trying again.")
             payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
-            actual_amount_paid = sum(card.value for card, _ in payment_cards)
+            valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
+            attempts += 1
+        if not valid:
+            print(f"Skipping payment due to invalid inputs: {reason_msg}")
+            return False
+        actual_amount_paid = sum(card.value for card, _ in payment_cards)
         print(f"{target_player.name} paid {actual_amount_paid}M ({amount}M requested) to {source_player.name} with cards {payment_cards} for {reason}.")
         for card, source in payment_cards:
             source_player.add_card(card, source)
@@ -363,14 +382,22 @@ class Game:
             jsn_action = current.wants_to_negate([other.name], self.to_json())
             if jsn_action is None:
                 break
-            if self.rules_engine.validate_action(jsn_action, current, [other], None):
-                current.remove_card_from_hand(jsn_action.card)
-                print(f"{current.name} played Just Say No!")
-                jsn_played = True
-                current, other = other, current
-            else:
-                print("Invalid Just Say No action. Try again!")
-                sys.exit(1)
+            valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
+            attempts = 0
+            while not valid and attempts < 2:
+                print(f"Invalid Just Say No action: {reason}. Trying again.")
+                jsn_action = current.wants_to_negate([other.name], self.to_json())
+                if jsn_action is None:
+                    break
+                valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
+                attempts += 1
+            if not valid:
+                print("Skipping Just Say No due to invalid inputs.")
+                break
+            current.remove_card_from_hand(jsn_action.card)
+            print(f"{current.name} played Just Say No!")
+            jsn_played = True
+            current, other = other, current
 
         return jsn_played and current == source_player    
         

@@ -327,6 +327,12 @@ class PropertySet():
             if card.name == card_name:
                 return True
         return False
+    
+    def get_card(self, card_name: str):
+        for card in self.cards:
+            if card.name == card_name:
+                return card
+        raise ValueError(f"Card {card_name} not found in set {self.set_color}. Full set description {self}")
 
     @property
     def is_full_set(self) -> bool:

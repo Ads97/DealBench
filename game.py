@@ -9,7 +9,7 @@ import random
 import sys
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet
+from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -125,7 +125,8 @@ class Game:
             # TODO: Separate out the functions where a player chooses what to do, and the functions that control player state?
             for card in cards_to_discard:
                 player.remove_card_from_hand(card)
-            # Discard chosen cards into self.game_state.discard_pile
+            if player.cards_in_hand > MAX_HAND_SIZE:
+                raise ValueError(f"Player {player.name} still has {player.cards_in_hand} cards in hand. player hand: {player.hand}")
 
         print(f"{player.name} ends turn.")
 
@@ -575,9 +576,10 @@ if __name__ == "__main__":
         # TestPlayer(name="Bob"),
         # meta_maverick,
         # gpt_4_1_nano,
-        deepseek_r1_0528,
+        # deepseek_r1_0528,
         # qwen3_235b,
         # claude_4_sonnet,
+        openai_o4_mini,
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

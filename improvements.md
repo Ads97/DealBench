@@ -1,8 +1,6 @@
 Things to check:
 
-1. should action have player objects in it
-2. how do I ensure source player is autofilled so it doesn't need to be passed everytime
-3. Should I separate out player functions and functions that update player state 
+1. Retry and pass validation error message to the LLM in the retry request 
 
 
 

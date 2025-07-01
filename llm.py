@@ -25,6 +25,7 @@ class LLMHandler():
     def _extract_json(response):
         response = response.json()
         text = response['choices'][0]['message']['content']
+        print(f"Response: {text}")
         return json.loads(text)
         # return response
 
@@ -54,7 +55,7 @@ class LLMHandler():
                             },
                             "card_name": {
                                 "type": "string",
-                                "description": "(optional field) The name of the card to play, if necessary (should be exact)."
+                                "description": "(optional field) The name of the card to play, if necessary (should be exact). Null if not needed"
                             },  
                             "target_players": {
                                 "type": "array",
@@ -65,11 +66,11 @@ class LLMHandler():
                             },
                             "target_property_set": {
                                 "type": "string",
-                                "description": "(optional field) The color name of the property set to target (or move to) if necessary"
+                                "description": "(optional field) The color name of the property set to target (or move to) if necessary. Null otherwise"
                             },
                             "rent_color": {
                                 "type": "string",
-                                "description": "(optional field) The color to charge rent for (must be a valid color for the Rent card) if necessary"
+                                "description": "(optional field) The color to charge rent for (must be a valid color for the Rent card) if necessary. Null otherwise"
                             },
                             "double_the_rent_count": {
                                 "type": "integer",
@@ -180,6 +181,7 @@ class LLMHandler():
     def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Dict[str, Any]:
         """Call the LLM with a rendered template."""
         prompt = self._render_template(template_name, **template_kwargs)
+        print(f"===PROMPT===\n{prompt}\n===END PROMPT===")
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
             "Content-Type": "application/json"
@@ -211,9 +213,9 @@ class LLMHandler():
                 # If the status isn’t 500, raise_for_status() will do the right thing
                 if response.status_code != 500:
                     response.raise_for_status()
-                    print(f"Response status: {response.status_code}")
-                    print(f"Response headers: {response.headers}")
-                    print(f"Response content: {response.text}")
+                    # print(f"Response status: {response.status_code}")
+                    # print(f"Response headers: {response.headers}")
+                    # print(f"Response content: {response.text}")
                     return self._extract_json(response)
 
                 # We got a 500 – decide whether to retry.
@@ -242,15 +244,20 @@ class LLMPlayer(Player, LLMHandler):
 
     @staticmethod
     def convert_to_none(string):
+        def contains_alpha(s):
+            return any(c.isalpha() for c in s)
+
         if not string:
             return None
         if type(string) != str:
             return string
-        if string.lower() == "null":
+        if "null" in string.lower():
             return None
         elif string == "":
             return None
         elif string == "[]":
+            return None
+        elif not contains_alpha(string):
             return None
         return string
             

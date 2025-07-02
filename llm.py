@@ -373,7 +373,7 @@ class LLMPlayer(Player, LLMHandler):
                 source = item['source']
                 card = None
                 if source == "bank":
-                    card = next((c for c in self.bank if c.name == card_name), None)
+                    card = next((c for c in self.bank if c.name == card_name), None) #either change the eq operator or make sure each card is unique here, in the instance where the bank and response['payment'] have multiple cards with the same name
                 elif source == "properties":
                     # Search all property sets
                     for prop_set in self.property_sets.values():

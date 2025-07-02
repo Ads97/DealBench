@@ -12,6 +12,8 @@ from deck_config import ACTIONS_PER_TURN
 import sys 
 from requests.exceptions import RequestException
 import time 
+import logging
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -25,7 +27,7 @@ class LLMHandler():
     def _extract_json(response):
         response = response.json()
         text = response['choices'][0]['message']['content']
-        print(f"Response: {text}")
+        logger.info(f"_extract_json response text: {text}")
         return json.loads(text)
         # return response
 
@@ -181,7 +183,7 @@ class LLMHandler():
     def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Dict[str, Any]:
         """Call the LLM with a rendered template."""
         prompt = self._render_template(template_name, **template_kwargs)
-        print(f"===PROMPT===\n{prompt}\n===END PROMPT===")
+        logger.info(f"===PROMPT===\n{prompt}\n===END PROMPT===")
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
             "Content-Type": "application/json"

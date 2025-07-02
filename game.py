@@ -10,6 +10,7 @@ import sys
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
 from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini
+import logging 
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -585,10 +586,17 @@ class TestPlayer(Player):
             if card.get_card_type() == CardType.ACTION_JUST_SAY_NO:
                 return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)
         return None
-        
+
+def setup_logging():
+    logging.basicConfig(
+        filename='deal.log',
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )  
 
 # Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":
+    setup_logging()
     players = [
         TestPlayer(name="Alice"),
         # TestPlayer(name="Bob"),

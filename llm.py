@@ -348,7 +348,11 @@ class LLMPlayer(Player, LLMHandler):
         
         discarded_cards = []
         for card_name in response:
-            card = next((c for c in self.hand if c.name == card_name), None)
+            card = None
+            for c in self.hand:
+                if c.name == card_name and c not in discarded_cards:
+                    card = c
+                    break
             if card:
                 discarded_cards.append(card)
                     
@@ -368,16 +372,25 @@ class LLMPlayer(Player, LLMHandler):
             )
             
             payment_cards = []
+            taken = set()
             for item in response['payment']:
                 card_name = item['card_name']
                 source = item['source']
                 card = None
                 if source == "bank":
-                    card = next((c for c in self.bank if c.name == card_name), None) #either change the eq operator or make sure each card is unique here, in the instance where the bank and response['payment'] have multiple cards with the same name
+                    for c in self.bank:
+                        if c.name == card_name and c not in taken:
+                            card = c 
+                            taken.add(c)
+                            break
                 elif source == "properties":
                     # Search all property sets
                     for prop_set in self.property_sets.values():
-                        card = next((c for c in prop_set.cards if c.name == card_name), None)
+                        for c in prop_set.cards:
+                            if c.name == card_name and c not in taken:
+                                card = c
+                                taken.add(c)
+                                break
                         if card:
                             break
                 if card:

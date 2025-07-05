@@ -3,7 +3,7 @@
 {%- endmacro %}
 
 {% macro display_game_state(game_state, actions_per_turn, perspective_player) %}
-Game state:
+# Game state:
 - Current player Turn: {{ game_state.current_player_name }}
 - Players: {{ game_state.players | map(attribute='name') | list }}
 - Turn count: {{ game_state.turns_completed_in_game }}
@@ -80,3 +80,12 @@ Other players:
   {% endif %}
 {% endfor %}
 {% endmacro %}
+
+{% macro display_game_history(game_history) -%}
+Here's the set of actions that have occurred so far in the game:
+
+# History
+{% for action in game_history %}
+* {{ action }}
+{% endfor %}
+{%- endmacro %}

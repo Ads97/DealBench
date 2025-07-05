@@ -149,13 +149,14 @@ class Player(ABC): # Inherit from ABC
         return len(self.hand)
 
     @abstractmethod
-    def get_action(self, game_state_dict: dict) -> Any: # Placeholder for GameState and Action types
+    def get_action(self, game_state_dict: dict, game_history: List[str]) -> Any: # Placeholder for GameState and Action types
         """
         Determines the action the player wants to take based on the game state.
         This must be implemented by subclasses (e.g., HumanPlayer, AIPlayer).
 
         Args:
             game_state: The current state of the game as json
+            game_history: List of strings representing the set of actions taken so far in the game
 
         Returns:
             An object representing the chosen action (details TBD).
@@ -163,7 +164,7 @@ class Player(ABC): # Inherit from ABC
         pass
 
     @abstractmethod
-    def choose_cards_to_discard(self, num_cards_to_discard, game_state_dict) -> Any:
+    def choose_cards_to_discard(self, num_cards_to_discard, game_state_dict, game_history: List[str]) -> Any:
         pass
 
     def __repr__(self) -> str:
@@ -178,10 +179,10 @@ class Player(ABC): # Inherit from ABC
         return hash(self.name)
     
     @abstractmethod
-    def provide_payment(self, reason: str, amount: int, game_state_dict: dict) -> List[Card]:
+    def provide_payment(self, reason: str, amount: int, game_state_dict: dict, game_history: List[str]) -> List[Card]:
         pass
 
     @abstractmethod
-    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict) -> Optional[Card]:
+    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict, game_history: List[str]) -> Optional[Card]:
         pass
         

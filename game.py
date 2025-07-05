@@ -96,7 +96,7 @@ class Game:
                 if error_reason:
                     print(f"Invalid action chosen: {error_reason}. Trying again.")
                 try:
-                    action = player.get_action(self.to_json())
+                    action = player.get_action(self.to_json(), self.game_history)
                     target_players = [self._get_player_by_name(n) for n in action.target_player_names]
                     valid, error_reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
                     attempts += 1
@@ -130,7 +130,7 @@ class Game:
         if player.cards_in_hand > MAX_HAND_SIZE:
             num_cards_to_discard = player.cards_in_hand - MAX_HAND_SIZE
             self.add_to_game_history(f"{player.name} has more than {MAX_HAND_SIZE} cards! Discard {num_cards_to_discard} cards")
-            cards_to_discard = player.choose_cards_to_discard(num_cards_to_discard, self.to_json())
+            cards_to_discard = player.choose_cards_to_discard(num_cards_to_discard, self.to_json(), self.game_history)
             # TODO: Separate out the functions where a player chooses what to do, and the functions that control player state?
             for card in cards_to_discard:
                 player.remove_card_from_hand(card)
@@ -193,7 +193,7 @@ class Game:
         card = action.card
         
         player.add_card_to_bank(card)
-        print(f"{player.name} banked ${card.value}M")
+        self.add_to_game_history(f"{player.name} banked ${card.value}M")
         return True
 
     def _execute_add_to_properties(self, action: Action):
@@ -251,12 +251,12 @@ class Game:
         if self._attempt_just_say_no(source_player, target_player):
             self.add_to_game_history(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
-        payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
+        payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json(), game_history=self.game_history)
         valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
         attempts = 0
         while not valid and attempts < 2:
             print(f"Invalid payment: {reason_msg}. Trying again.")
-            payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
+            payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json(), game_history=self.game_history)
             valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
             attempts += 1
         if not valid:
@@ -375,14 +375,14 @@ class Game:
         jsn_played = False
 
         while True:
-            jsn_action = current.wants_to_negate([other.name], self.to_json())
+            jsn_action = current.wants_to_negate([other.name], self.to_json(), self.game_history)
             if jsn_action is None:
                 break
             valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
             attempts = 0
             while not valid and attempts < 2:
                 print(f"Invalid Just Say No action: {reason}. Trying again.")
-                jsn_action = current.wants_to_negate([other.name], self.to_json())
+                jsn_action = current.wants_to_negate([other.name], self.to_json(), self.game_history)
                 if jsn_action is None:
                     break
                 valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
@@ -399,7 +399,7 @@ class Game:
         
 
 class TestPlayer(Player):
-    def get_action(self, game_state_dict: dict) -> Optional[Action]:
+    def get_action(self, game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         """
         Build a list of every *legal* move the player can make in the current
         state, then pick one uniformly at random.  
@@ -558,11 +558,11 @@ class TestPlayer(Player):
         return Action(source_player=self, action_type=ActionType.PASS)
     
     
-    def choose_cards_to_discard(self, num_cards_to_discard, game_state_dict) -> List[Card]:
+    def choose_cards_to_discard(self, num_cards_to_discard, game_state_dict, game_history: List[str]) -> List[Card]:
         cards_to_discard = random.sample(self.hand,num_cards_to_discard)
         return cards_to_discard
     
-    def provide_payment(self, reason: str, amount: int, game_state_dict: dict):
+    def provide_payment(self, reason: str, amount: int, game_state_dict: dict, game_history: List[str]):
         bank_value = sum(card.value for card in self.bank)
         if bank_value >= amount:
             payment = []
@@ -585,7 +585,7 @@ class TestPlayer(Player):
                         return payment
         return payment
     
-    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict) -> Optional[Action]:
+    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         for card in self.hand:
             if card.get_card_type() == CardType.ACTION_JUST_SAY_NO:
                 return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)

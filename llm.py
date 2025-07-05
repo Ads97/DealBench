@@ -319,14 +319,15 @@ class LLMPlayer(Player, LLMHandler):
             forced_or_sly_deal_target_property_info=build_info(response.get('forced_or_sly_deal_target_property_info'))
         )
     
-    def get_action(self, game_state_dict: dict) -> Optional[Action]:
+    def get_action(self, game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         """Get the next action from the LLM."""
         response = self.call_llm(
             'get_action_prompt.j2',
             response_format="action",
             player=self,
             game_state=game_state_dict,
-            actions_per_turn=ACTIONS_PER_TURN
+            actions_per_turn=ACTIONS_PER_TURN,
+            game_history=game_history
         )
 
         if not isinstance(response, dict):
@@ -336,7 +337,7 @@ class LLMPlayer(Player, LLMHandler):
 
         return self.convert_json_to_action(response)
 
-    def choose_cards_to_discard(self, num_cards_to_discard: int, game_state_dict: dict) -> List[Card]:
+    def choose_cards_to_discard(self, num_cards_to_discard: int, game_state_dict: dict, game_history: List[str]) -> List[Card]:
         """Choose cards to discard using the LLM."""
         response = self.call_llm(
             'choose_cards_to_discard_prompt.j2',
@@ -344,7 +345,8 @@ class LLMPlayer(Player, LLMHandler):
             player=self,
             game_state=game_state_dict,
             num_cards_to_discard=num_cards_to_discard,
-            actions_per_turn=ACTIONS_PER_TURN
+            actions_per_turn=ACTIONS_PER_TURN,
+            game_history=game_history
         )
         
         discarded_cards = []
@@ -359,7 +361,7 @@ class LLMPlayer(Player, LLMHandler):
                     
         return discarded_cards
 
-    def provide_payment(self, reason: str, amount: int, game_state_dict: dict) -> List:
+    def provide_payment(self, reason: str, amount: int, game_state_dict: dict, game_history: List[str]) -> List:
         """Provide payment using the LLM to choose which cards to use, returning (Card, source) tuples."""
         try:
             response = self.call_llm(
@@ -369,7 +371,8 @@ class LLMPlayer(Player, LLMHandler):
                 reason=reason,
                 amount=amount,
                 game_state=game_state_dict,
-                actions_per_turn=ACTIONS_PER_TURN
+                actions_per_turn=ACTIONS_PER_TURN,
+                game_history=game_history
             )
             
             payment_cards = []
@@ -403,7 +406,7 @@ class LLMPlayer(Player, LLMHandler):
             print(f"Exception. Error in provide_payment: {e}")
             return None
 
-    def wants_to_negate(self, action: Action, game_state_dict: dict) -> bool:
+    def wants_to_negate(self, action: Action, game_state_dict: dict, game_history: List[str]) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
         return None # keeping complexity low for now
         # Check if we have a Just Say No card
@@ -417,7 +420,8 @@ class LLMPlayer(Player, LLMHandler):
                 player=self,
                 action=str(action),
                 game_state=game_state_dict,
-                actions_per_turn=ACTIONS_PER_TURN
+                actions_per_turn=ACTIONS_PER_TURN,
+                game_history=game_history
             )
             
             return response.get('negate', False)

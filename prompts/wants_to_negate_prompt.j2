@@ -1,10 +1,11 @@
-{% from 'game_state_display.j2' import display_game_state %}
+{% from 'macros.j2' import display_game_state, display_game_history %}
 You are an AI player in a Monopoly Deal game and have a "Just Say No" card in your hand. Another player has just played an action against you:
 
 Action: {{ action }}
 
 Decide if you want to play the "just say no" card to negate this action or not at this time.
 
+{{ display_game_history(game_history) }}
 {{ display_game_state(game_state, actions_per_turn, player) }}
 
 Your response should be a JSON object with the following structure:

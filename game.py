@@ -25,19 +25,20 @@ class Game:
         if not players or len(players) < 2 or len(players) > 5:
             raise ValueError("Game requires between 2 and 5 players.")
 
+        self.game_history = []
         print("Initializing Game...")
         # 1. Create and shuffle the deck
         self.deck: Deck = Deck() 
         print(f"Created deck with {self.deck.total_cards} cards.")
         random.shuffle(players)
         self.players = players
-        print(f"Play order: {', '.join([p.name for p in players])}")
+        self.add_to_game_history(f"Play order: {', '.join([p.name for p in players])}")
 
         # 4. Initialize Action Handler
         self.rules_engine = RulesEngine()
 
         # 5. Deal initial hands
-        print(f"Dealing initial {INITIAL_HAND_SIZE} cards to each player...")
+        self.add_to_game_history(f"Dealing initial {INITIAL_HAND_SIZE} cards to each player...")
         for player in self.players:
             for _ in range(INITIAL_HAND_SIZE):
                 card = self.deck.draw_card()
@@ -48,30 +49,34 @@ class Game:
 
         print("Game Setup Complete.")
 
+    def add_to_game_history(self, message: str):
+        print(message)
+        self.game_history.append(message)
+    
     def run_game(self):
         """Runs the main game loop until a winner is determined."""
-        print("\n--- Starting Game --- ")
+        self.add_to_game_history("\n--- Starting Game --- ")
         self.turn_count = 0
         while self.game_winner is None:
             current_player = self._get_current_player()
-            print(f"\n--- {current_player.name}'s Turn ---")
+            self.add_to_game_history(f"\n--- {current_player.name}'s Turn ---")
             self._take_turn(current_player)
             has_won = self.rules_engine.check_win_condition(current_player)
             if has_won:
                 self.game_winner = current_player.name
-                print(f"\n--- GAME OVER --- {self.game_winner} wins! ---")
+                self.add_to_game_history(f"\n--- GAME OVER --- {self.game_winner} wins! ---")
                 break
             self.turn_count += 1
 
         if self.game_winner:
-            print(f"{self.game_winner} is the winner after {self.turn_count} turns!")
+            self.add_to_game_history(f"{self.game_winner} is the winner after {self.turn_count} turns!")
 
     def _get_current_player(self):
         return self.players[self.turn_count%len(self.players)]
         
     def _take_turn(self, player: Player):
         """Handles the logic for a single player's turn."""
-        print(f"{player.name} starts turn.")
+        self.add_to_game_history(f"{player.name} starts turn.")
         # print(json.dumps(self.to_json(debug=True), indent=4))
         # draw two cards first 
         for _ in range(DRAWS_PER_TURN):
@@ -82,7 +87,7 @@ class Game:
         self.actions_played = 0
         while self.actions_played < ACTIONS_PER_TURN:
             # TODO: Display game state to player (hand, properties, bank etc.)
-            print(f"{player.name} has played {self.actions_played}/{ACTIONS_PER_TURN} actions.")
+            self.add_to_game_history(f"{player.name} has played {self.actions_played}/{ACTIONS_PER_TURN} actions.")
 
             valid = False
             error_reason = None
@@ -101,11 +106,11 @@ class Game:
                     continue
             
             if not valid:
-                print(f"Skipping {player.name}'s action due to invalid actions: {error_reason}")
+                self.add_to_game_history(f"Skipping {player.name}'s action due to invalid actions: {error_reason}")
                 break
 
             if action.action_type == ActionType.PASS: # Player chose to end turn
-                print(f"{player.name} has chosen to end their action phase.")
+                self.add_to_game_history(f"{player.name} has chosen to end their action phase.")
                 break
 
             # now execute action
@@ -124,7 +129,7 @@ class Game:
         # 3. Discard excess cards
         if player.cards_in_hand > MAX_HAND_SIZE:
             num_cards_to_discard = player.cards_in_hand - MAX_HAND_SIZE
-            print(f"{player.name} has more than {MAX_HAND_SIZE} cards! Discard {num_cards_to_discard} cards")
+            self.add_to_game_history(f"{player.name} has more than {MAX_HAND_SIZE} cards! Discard {num_cards_to_discard} cards")
             cards_to_discard = player.choose_cards_to_discard(num_cards_to_discard, self.to_json())
             # TODO: Separate out the functions where a player chooses what to do, and the functions that control player state?
             for card in cards_to_discard:
@@ -132,7 +137,7 @@ class Game:
             if player.cards_in_hand > MAX_HAND_SIZE:
                 raise ValueError(f"Player {player.name} still has {player.cards_in_hand} cards in hand. player hand: {player.hand}")
 
-        print(f"{player.name} ends turn.")
+        self.add_to_game_history(f"{player.name} ends turn.")
 
     def to_json(self, debug=False) -> Dict[str, Any]:
         """Exposes all the game state that a player should have access to."""
@@ -202,7 +207,7 @@ class Game:
             player.add_card_to_properties(card)
         elif isinstance(card, BuildingCard):
             player.add_card_to_properties(card, action.target_property_set)
-        print(f"{player.name} added property {card.name} to {action.target_property_set}")
+        self.add_to_game_history(f"{player.name} added property {card.name} to {action.target_property_set}")
         return True    
     
     def _execute_move_property(self, action: Action):
@@ -214,7 +219,7 @@ class Game:
         player.remove_card_from_properties(card)
         player.add_card_to_properties(card, target_property_set)
 
-        print(f"{player.name} moved property {card.name} to {target_property_set}")
+        self.add_to_game_history(f"{player.name} moved property {card.name} to {target_property_set}")
         return True
 
     def _execute_pass(self, action):
@@ -244,7 +249,7 @@ class Game:
     
     def _get_money_from(self, source_player: Player, target_player: Player, amount: int, reason: str):
         if self._attempt_just_say_no(source_player, target_player):
-            print(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
+            self.add_to_game_history(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
         payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json())
         valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
@@ -255,10 +260,10 @@ class Game:
             valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
             attempts += 1
         if not valid:
-            print(f"Skipping payment due to invalid inputs: {reason_msg}")
+            self.add_to_game_history(f"Skipping payment due to invalid inputs: {reason_msg}")
             return False
         actual_amount_paid = sum(card.value for card, _ in payment_cards)
-        print(f"{target_player.name} paid {actual_amount_paid}M ({amount}M requested) to {source_player.name} with cards {payment_cards} for {reason}.")
+        self.add_to_game_history(f"{target_player.name} paid {actual_amount_paid}M ({amount}M requested) to {source_player.name} with cards {payment_cards} for {reason}.")
         for card, source in payment_cards:
             source_player.add_card(card, source)
             target_player.remove_card(card, source)
@@ -293,7 +298,7 @@ class Game:
         for _ in range(PASS_GO_DRAW_COUNT):
             card = self.deck.draw_card()
             player.add_card_to_hand(card)
-        print(f"{player.name} received {PASS_GO_DRAW_COUNT} cards from Pass Go. {player.name} now has {player.cards_in_hand} cards.")
+        self.add_to_game_history(f"{player.name} received {PASS_GO_DRAW_COUNT} cards from Pass Go. {player.name} now has {player.cards_in_hand} cards.")
         return True
 
     def _execute_its_my_birthday(self, action: Action):
@@ -320,12 +325,12 @@ class Game:
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
         if self._attempt_just_say_no(player, target_player):
-            print(f"{target_player.name} cancelled the Deal Breaker from {player.name} with Just Say No.")
+            self.add_to_game_history(f"{target_player.name} cancelled the Deal Breaker from {player.name} with Just Say No.")
             return False
         set_color = action.target_property_set
         property_set = target_player.remove_property_set(set_color)
         player.add_property_set(set_color, property_set)
-        print(f"{player.name} stole property set {set_color} from {target_player_name} with a deal breaker.")
+        self.add_to_game_history(f"{player.name} stole property set {set_color} from {target_player_name} with a deal breaker.")
         return True
     
     def _execute_sly_deal(self, action: Action):
@@ -335,13 +340,12 @@ class Game:
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
         if self._attempt_just_say_no(player, target_player):
-            print(f"{target_player.name} cancelled the Sly Deal from {player.name} with Just Say No.")
+            self.add_to_game_history(f"{target_player.name} cancelled the Sly Deal from {player.name} with Just Say No.")
             return False
-        print(f"{action.forced_or_sly_deal_target_property_info}")
         stolen_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_info)
         target_player.remove_card_from_properties(stolen_card)
         player.add_card_to_properties(stolen_card)
-        print(f"{player.name} stole property {stolen_card.name} from {target_player_name} with a sly deal.")
+        self.add_to_game_history(f"{player.name} stole property {stolen_card.name} from {target_player_name} with a sly deal.")
         return True
         
     def _execute_forced_deal(self, action: Action):
@@ -351,16 +355,15 @@ class Game:
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
         if self._attempt_just_say_no(player, target_player):
-            print(f"{target_player.name} cancelled the Forced Deal from {player.name} with Just Say No.")
+            self.add_to_game_history(f"{target_player.name} cancelled the Forced Deal from {player.name} with Just Say No.")
             return False
         source_card = player.get_card_from_properties(action.forced_deal_source_property_info)
-        print(f"{action.forced_or_sly_deal_target_property_info}")
         target_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_info)
         player.remove_card_from_properties(source_card)
         target_player.add_card_to_properties(source_card)
         target_player.remove_card_from_properties(target_card)
         player.add_card_to_properties(target_card)
-        print(f"{player.name} forced deal {source_card.name} to {target_player_name} and received {target_card.name}.")
+        self.add_to_game_history(f"{player.name} forced deal {source_card.name} to {target_player_name} and received {target_card.name}.")
         return True
 
     def _attempt_just_say_no(self, source_player: Player, target_player: Player) -> bool:
@@ -385,10 +388,10 @@ class Game:
                 valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
                 attempts += 1
             if not valid:
-                print("Skipping Just Say No due to invalid inputs.")
+                self.add_to_game_history("Skipping Just Say No due to invalid inputs.")
                 break
             current.remove_card_from_hand(jsn_action.card)
-            print(f"{current.name} played Just Say No!")
+            self.add_to_game_history(f"{current.name} played Just Say No!")
             jsn_played = True
             current, other = other, current
 

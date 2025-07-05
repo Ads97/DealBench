@@ -162,8 +162,9 @@ class Game:
         #     raise ValueError(f"Card {self.card.name} is not an action card.")
 
         # Remove card from player's hand and add to discard pile
-        action.source_player.remove_card_from_hand(action.card)
-        self.deck.discard_card(action.card) # Assuming game has discard_pile with add method
+        if action.action_type != ActionType.MOVE_PROPERTY:
+            action.source_player.remove_card_from_hand(action.card)
+            self.deck.discard_card(action.card) # Assuming game has discard_pile with add method
 
         action_type = action.action_type
 
@@ -210,7 +211,7 @@ class Game:
         card = action.card
         target_property_set = action.target_property_set
         
-        # Card is already removed from the player's hand.
+        player.remove_card_from_properties(card)
         player.add_card_to_properties(card, target_property_set)
 
         print(f"{player.name} moved property {card.name} to {target_property_set}")

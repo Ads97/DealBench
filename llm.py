@@ -343,11 +343,12 @@ class LLMPlayer(Player, LLMHandler):
             response_format="discard",
             player=self,
             game_state=game_state_dict,
-            num_cards_to_discard=num_cards_to_discard
+            num_cards_to_discard=num_cards_to_discard,
+            actions_per_turn=ACTIONS_PER_TURN
         )
         
         discarded_cards = []
-        for card_name in response:
+        for card_name in response['card_names']:
             card = None
             for c in self.hand:
                 if c.name == card_name and c not in discarded_cards:

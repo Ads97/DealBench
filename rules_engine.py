@@ -9,6 +9,9 @@ class RulesEngine:
     def validate_action(action: Action, current_player: Player, target_players: List[Player], actions_played: Optional[int]) -> Tuple[bool, Optional[str]]:
         """Validates if a proposed action is legal according to game rules."""
         
+        if action.action_type == ActionType.PASS:
+            return True, None
+        
         if not action.card:
             return False, "No card provided"
 
@@ -17,7 +20,16 @@ class RulesEngine:
 
         # Check if player has the card (unless it's a context action like passing)
         if action.card not in action.source_player.hand:
-            return False, f"Validation Error: {action.source_player.name} does not have {action.card.name}"
+            if not action.action_type == ActionType.MOVE_PROPERTY:
+                return False, f"Validation Error: {action.source_player.name} does not have {action.card.name} in hand"
+            else:
+                found=False
+                for prop_set in current_player.get_property_sets().values():
+                    if action.card in prop_set.cards:
+                        found=True
+                        break
+                if not found:
+                    return False, f"Validation Error: {current_player.name} does not have {action.card.name} in properties"
 
         if not (action.action_type == ActionType.PLAY_ACTION and action.card.get_card_type() == CardType.ACTION_RENT):
             if action.double_the_rent_count > 0:

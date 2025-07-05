@@ -1,5 +1,75 @@
-This is a test. Respond with this object exactly:
+You are an AI player in a Monopoly Deal game and need to discard exactly 1 cards from your hand now.
+
+
+Game state:
+- Current player Turn: openai/o4-mini
+- Players: ['openai/o4-mini', 'Alice']
+- Turn count: 0
+- Actions played in current turn: 3 / 3
+
+Your current game state:
+- Hand:
+
+
+- - name: $1M, value: 1, type: MONEY
+
+- - name: Forced Deal, value: 3, type: ACTION_FORCED_DEAL
+
+- - name: $4M, value: 4, type: MONEY
+
+- - name: $3M, value: 3, type: MONEY
+
+- - name: Rent (Pink/Orange), value: 1, type: ACTION_RENT, colors: ['PINK', 'ORANGE']
+
+- - name: Rent (Yellow/Red), value: 1, type: ACTION_RENT, colors: ['YELLOW', 'RED']
+
+- - name: $2M, value: 2, type: MONEY
+
+- - name: Harvest Ln, value: 2, type: PROPERTY, set_color: ORANGE, rent_values: [1, 3, 5], num_properties_for_full_set: 3
+
+
+- Bank (Total value: 0):
+
+  None.
+
+- Property Sets:
+
+  
+  - UTILITY:
+    Cards:
+    
+    
+      - name: Wild (Utility/Railroad), value: 2, type: PROPERTY_WILD, available_colors: ['UTILITY', 'RAILROAD'], current_color: UTILITY
+    
+    
+    Full Set: False
+    House: False, Hotel: False
+    Rent: 
+  
+
+
+Other players:
+
+  
+
+  
+- Alice:
+  - Bank (Total value: 0):
+    
+    None.
+    
+  - Property Sets:
+    
+      None.
+    
+  
+
+
+
+Choose the 1 cards to discard from your hand.
+
+Your response must be a JSON object with 'reasoning' and 'card_names' fields, for example:
 {
-  "reasoning": "I need to discard 2 cards",
-  "card_names": ["card_name_1", "card_name_2"],
+  "reasoning": "I'm discarding these cards because...",
+  "card_names": ["Card Name 1", "Card Name 2"]
 }

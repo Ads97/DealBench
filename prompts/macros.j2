@@ -1,8 +1,8 @@
-{% macro render_card(card) -%}
+{%- macro render_card(card) -%}
 {{ card.items() | map('join', ': ') | join(', ') }}
-{%- endmacro %}
+{%- endmacro -%}
 
-{% macro display_game_state(game_state, actions_per_turn, perspective_player) %}
+{%- macro display_game_state(game_state, actions_per_turn, perspective_player) -%}
 # Game state:
 - Current player Turn: {{ game_state.current_player_name }}
 - Players: {{ game_state.players | map(attribute='name') | list }}
@@ -11,81 +11,81 @@
 
 Your current game state:
 - Hand:
-{% if perspective_player.hand %}
-{% for card in perspective_player.hand %}
+{%- if perspective_player.hand -%}
+{%- for card in perspective_player.hand -%}
 - - {{ render_card(card.to_json()) }}
-{% endfor %}
-{% else %}
+{%- endfor -%}
+{%- else -%}
   None.
-{% endif %}
+{%- endif -%}
 - Bank (Total value: {{ perspective_player.get_bank_value() }}):
-{% if perspective_player.bank %}
-{% for card in perspective_player.bank %}
+{%- if perspective_player.bank -%}
+{%- for card in perspective_player.bank -%}
 - - {{ render_card(card.to_json()) }}
-{% endfor %}
-{% else %}
+{%- endfor -%}
+{%- else -%}
   None.
-{% endif %}
+{%- endif -%}
 - Property Sets:
-{% if perspective_player.property_sets %}
-  {% for color, prop_set in perspective_player.property_sets.items() %}
+{%- if perspective_player.property_sets -%}
+{%- for color, prop_set in perspective_player.property_sets.items() -%}
   - {{ color.name}}:
     Cards:
-    {% if prop_set.cards %}
-    {% for card in prop_set.cards %}
+    {%- if prop_set.cards -%}
+    {%- for card in prop_set.cards -%}
       - {{ render_card(card.to_json()) }}
-    {% endfor %}
-    {% else %}
+    {%- endfor -%}
+    {%- else -%}
       None.
-    {% endif %}
+    {%- endif -%}
     Full Set: {{ prop_set.is_full_set }}
     House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
     Rent: {{ prop_set.rent }}
-  {% endfor %}
-{% else %}
+  {%- endfor -%}
+{%- else -%}
  None.
-{% endif %}
+{%- endif -%}
 
 Other players:
-{% for player in game_state.players %}
-  {% if player.name != perspective_player.name %}
+{%- for player in game_state.players -%}
+  {%- if player.name != perspective_player.name -%}
 - {{ player.name }}:
   - Bank (Total value: {{ player.bank_value }}):
-    {% if player.banked_cards %}
-    {% for card in player.banked_cards %}
+    {%- if player.banked_cards -%}
+    {%- for card in player.banked_cards -%}
       - {{ render_card(card) }}
-    {% endfor %}
-    {% else %}
+    {%- endfor -%}
+    {%- else -%}
     None.
-    {% endif %}
+    {%- endif -%}
   - Property Sets:
-    {% if player.property_sets %}
-      {% for color, prop_set in player.property_sets.items() %}
+    {%- if player.property_sets -%}
+      {%- for color, prop_set in player.property_sets.items() -%}
     - {{ color.name if color is string else color }}:
         Cards:
-        {% if prop_set.cards %}
-        {% for card in prop_set.cards %}
+        {%- if prop_set.cards -%}
+        {%- for card in prop_set.cards -%}
         - {{ render_card(card) }}
-        {% endfor %}
-        {% else %}
+        {%- endfor -%}
+        {%- else -%}
         None.
-        {% endif %}
+        {%- endif -%}
         Full Set: {{ prop_set.is_full_set }}
         House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
         Rent: {{ prop_set.rent }}
-      {% endfor %}
-    {% else %}
+      {%- endfor -%}
+    {%- else -%}
       None.
-    {% endif %}
-  {% endif %}
-{% endfor %}
-{% endmacro %}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- endmacro -%}
 
-{% macro display_game_history(game_history) -%}
+{%- macro display_game_history(game_history) -%}
 Here's the set of actions that have occurred so far in the game:
 
 # History
-{% for action in game_history %}
+{%- for action in game_history -%}
 * {{ action }}
-{% endfor %}
-{%- endmacro %}
+{%- endfor -%}
+{%- endmacro -%}

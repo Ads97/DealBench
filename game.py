@@ -7,7 +7,7 @@ from action import Action, ActionType, ActionPropertyInfo
 from rules_engine import RulesEngine
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3
+from llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro
 import logging 
 import time
 import os 
@@ -263,7 +263,7 @@ class Game:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
     def _get_money_from(self, source_player: Player, target_player: Player, amount: int, reason: str):
-        if self._attempt_just_say_no(source_player, target_player):
+        if self._attempt_just_say_no(f"collect {amount} for {reason}", source_player, target_player):
             self.add_to_game_history(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
         payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json(), game_history=self.game_history)
@@ -339,7 +339,7 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
-        if self._attempt_just_say_no(player, target_player):
+        if self._attempt_just_say_no(f"deal breaker - steal property set {action.target_property_set}", player, target_player):
             self.add_to_game_history(f"{target_player.name} cancelled the Deal Breaker from {player.name} with Just Say No.")
             return False
         set_color = action.target_property_set
@@ -354,7 +354,7 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
-        if self._attempt_just_say_no(player, target_player):
+        if self._attempt_just_say_no(f"sly deal - steal property {action.forced_or_sly_deal_target_property_info.name}", player, target_player):
             self.add_to_game_history(f"{target_player.name} cancelled the Sly Deal from {player.name} with Just Say No.")
             return False
         stolen_card = target_player.get_card_from_properties(action.forced_or_sly_deal_target_property_info)
@@ -369,7 +369,7 @@ class Game:
         target_player = self._get_player_by_name(target_player_name)
         if target_player is None:
             raise ValueError(f"Target player {target_player_name} not found for action {action}.")
-        if self._attempt_just_say_no(player, target_player):
+        if self._attempt_just_say_no(f"forced deal - take away {action.forced_or_sly_deal_target_property_info.name} and receive {action.forced_deal_source_property_info.name}", player, target_player):
             self.add_to_game_history(f"{target_player.name} cancelled the Forced Deal from {player.name} with Just Say No.")
             return False
         source_card = player.get_card_from_properties(action.forced_deal_source_property_info)
@@ -381,7 +381,7 @@ class Game:
         self.add_to_game_history(f"{player.name} forced deal {source_card.name} to {target_player_name} and received {target_card.name}.")
         return True
 
-    def _attempt_just_say_no(self, source_player: Player, target_player: Player) -> bool:
+    def _attempt_just_say_no(self, reason: str, source_player: Player, target_player: Player) -> bool:
         """Handle a possible chain of Just Say No cards.
 
         Returns True if the pending action should be cancelled."""
@@ -389,15 +389,17 @@ class Game:
         other = source_player
         jsn_played = False
 
+        action_chain_str = f"{source_player.name} has just performed action '{reason}' on {target_player.name}."
+
         while True:
-            jsn_action = current.wants_to_negate([other.name], self.to_json(), self.game_history)
+            jsn_action = current.wants_to_negate(action_chain_str=action_chain_str, target_player_name=other.name, game_state_dict=self.to_json(), game_history=self.game_history)
             if jsn_action is None:
                 break
             valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
             attempts = 0
             while not valid and attempts < 2:
                 print(f"Invalid Just Say No action: {reason}. Trying again.")
-                jsn_action = current.wants_to_negate([other.name], self.to_json(), self.game_history)
+                jsn_action = current.wants_to_negate(action_chain_str=action_chain_str, target_player_name=other.name, game_state_dict=self.to_json(), game_history=self.game_history)
                 if jsn_action is None:
                     break
                 valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
@@ -407,6 +409,7 @@ class Game:
                 break
             current.remove_card_from_hand(jsn_action.card)
             self.add_to_game_history(f"{current.name} played Just Say No!")
+            action_chain_str += f"\n{current.name} played Just Say No!"
             jsn_played = True
             current, other = other, current
 
@@ -600,10 +603,10 @@ class TestPlayer(Player):
                         return payment
         return payment
     
-    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
+    def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         for card in self.hand:
             if card.get_card_type() == CardType.ACTION_JUST_SAY_NO:
-                return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)
+                return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=[target_player_name])
         return None
 
 def setup_logging(log_file_name: str):
@@ -621,11 +624,12 @@ if __name__ == "__main__":
         # TestPlayer(name="Bob"),
         # meta_maverick,
         # gpt_4_1_nano,
-        # deepseek_r1_0528,
+        deepseek_r1,
         # qwen3_235b,
         # claude_4_sonnet,
         # openai_o4_mini,
-        openai_o3,
+        # openai_o3,
+        # gemini_2_5_pro
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

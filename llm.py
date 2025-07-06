@@ -219,6 +219,7 @@ class LLMHandler():
             "role": "system",
             "content": game_rules,
         }
+            
         payload = {
             "model": self.model_name,
             "messages": [system_message, {"role": "user", "content": prompt}],
@@ -231,6 +232,11 @@ class LLMHandler():
             # },
             # "max_tokens": 1000
         }
+        if self.model_name.startswith("anthropic"):
+            payload["thinking"] = {
+                "type": "enabled",
+                # "budget_tokens": 10000
+            }
         max_retries = 3          # total attempts = 1 original + 2 retries
         backoff_base = 1.0       # seconds; grows exponentially
 
@@ -285,6 +291,8 @@ class LLMPlayer(Player, LLMHandler):
         elif string == "[]":
             return None
         elif not contains_alpha(string):
+            return None
+        elif string.lower().startswith("string"): # gemini-2.5-pro does this
             return None
         return string
             
@@ -431,7 +439,7 @@ class LLMPlayer(Player, LLMHandler):
             print(f"Exception. Error in provide_payment: {e}")
             return None
 
-    def wants_to_negate(self, action: Action, game_state_dict: dict, game_history: List[str]) -> bool:
+    def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
         # Check if we have a Just Say No card
         just_say_no_count = len([c for c in self.hand if c.get_card_type() == CardType.ACTION_JUST_SAY_NO])
@@ -443,7 +451,7 @@ class LLMPlayer(Player, LLMHandler):
                 'wants_to_negate_prompt.j2',
                 response_format="negate",
                 player=self,
-                action=str(action),
+                action_chain_str=action_chain_str,
                 game_state=game_state_dict,
                 actions_per_turn=ACTIONS_PER_TURN,
                 game_history=game_history
@@ -456,12 +464,12 @@ class LLMPlayer(Player, LLMHandler):
             return None
 
 qwen3_235b = LLMPlayer(model_name="qwen/qwen3-235b-a22b:free")
-deepseek_r1_0528 = LLMPlayer(model_name="deepseek/deepseek-r1-0528:free")
+deepseek_r1 = LLMPlayer(model_name="deepseek/deepseek-r1-0528:free")
 sarvam_m = LLMPlayer(model_name="sarvamai/sarvam-m:free")
 meta_maverick = LLMPlayer(model_name="meta-llama/llama-4-maverick:free")
 deepseek_v3_base = LLMPlayer(model_name="deepseek/deepseek-v3-base:free")
 gemma3_27b = LLMPlayer(model_name="google/gemma-3-27b-it:free")
-gemini_2_5_pro_experimental = LLMPlayer(model_name="google/gemini-2.5-pro-exp-03-25") #think its free?
+gemini_2_5_pro = LLMPlayer(model_name="google/gemini-2.5-pro")
 gpt_4_1_nano = LLMPlayer(model_name="openai/gpt-4.1-nano-2025-04-14")
 gpt_4_1_mini = LLMPlayer(model_name="openai/gpt-4.1-mini-2025-04-14")
 claude_4_sonnet = LLMPlayer(model_name="anthropic/claude-4-sonnet-20250522")
@@ -473,7 +481,10 @@ if __name__ == "__main__":
     # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
     # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
     # handler = LLMHandler(model_name="openai/o4-mini")
-    handler = LLMHandler(model_name="openai/o3")
+    # handler = LLMHandler(model_name="openai/o3")
+    # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
+    # handler = LLMHandler(model_name="google/gemini-2.5-pro")
+    handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
     handler.call_llm("test_action.j2", response_format="action")
     # handler.call_llm("test_payment.j2", response_format="payment")
     # handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)

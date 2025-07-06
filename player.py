@@ -183,6 +183,6 @@ class Player(ABC): # Inherit from ABC
         pass
 
     @abstractmethod
-    def wants_to_negate(self, target_player_names: List[str], game_state_dict: dict, game_history: List[str]) -> Optional[Card]:
+    def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> Optional[Card]:
         pass
         

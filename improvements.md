@@ -8,10 +8,10 @@ Tournament
 Players:
 1. o4-mini (1.1 input, 4.4 output) ~5 cents a game
 2. o3 (2 input, 8 output) ~10 cents a game
-3. claude sonnet 4 (3 input, 15 output) ~15 cents a game
+3. claude sonnet 4 (3 input, 15 output) ~15 cents a game (nope)
 4. claude opus 4 (15 input, 75 output) ~75 cents a game (not now too expensive)
-5. gemini 2.5-pro (1.25 input, 10 output) (~10 cents a game)
-6. deepseek r1 (0 input, 0 output)
+5. gemini 2.5-pro (1.25 input, 10 output) (~10 cents a game) (works)
+6. deepseek r1 (0 input, 0 output) # problematic actions and server 500s
 7. random turn bot (0 input, 0 output)
 
 
@@ -24,3 +24,7 @@ Things to do:
 
 Separate idea: indic games repo?
 
+test with test players 
+Logging collisions
+setup_logging in game.py uses logging.basicConfig, which configures the global logger. When multiple games run concurrently (the tournament launches them in parallel via trio), all games may end up writing to the same log file. Consider modifying setup_logging to create a per‑game logger with its own FileHandler
+Output Volume – The Game class prints a large amount of information to stdout. Running many concurrent games may produce a lot of output, which can slow execution or clutter logs.

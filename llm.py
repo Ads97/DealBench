@@ -466,12 +466,14 @@ gpt_4_1_nano = LLMPlayer(model_name="openai/gpt-4.1-nano-2025-04-14")
 gpt_4_1_mini = LLMPlayer(model_name="openai/gpt-4.1-mini-2025-04-14")
 claude_4_sonnet = LLMPlayer(model_name="anthropic/claude-4-sonnet-20250522")
 openai_o4_mini = LLMPlayer(model_name="openai/o4-mini")
+openai_o3 = LLMPlayer(model_name="openai/o3")
 
 if __name__ == "__main__":
 
     # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
     # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
-    handler = LLMHandler(model_name="openai/o4-mini")
+    # handler = LLMHandler(model_name="openai/o4-mini")
+    handler = LLMHandler(model_name="openai/o3")
     handler.call_llm("test_action.j2", response_format="action")
     # handler.call_llm("test_payment.j2", response_format="payment")
     # handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)

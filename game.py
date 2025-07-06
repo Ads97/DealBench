@@ -7,7 +7,7 @@ from action import Action, ActionType, ActionPropertyInfo
 from rules_engine import RulesEngine
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini
+from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3
 import logging 
 import time
 import os 
@@ -527,7 +527,7 @@ class TestPlayer(Player):
                             valid_actions.append(
                                 Action(source_player=self, card=card,target_player_names=[target_player['name']],
                                     action_type=ActionType.PLAY_ACTION,
-                                    target_property_set=color)
+                                    target_property_set=PropertyColor[color])
                             )
             elif isinstance(card, SlyDealCard):
                 for target_player in game_state_dict['players']:
@@ -624,7 +624,8 @@ if __name__ == "__main__":
         # deepseek_r1_0528,
         # qwen3_235b,
         # claude_4_sonnet,
-        openai_o4_mini,
+        # openai_o4_mini,
+        openai_o3,
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

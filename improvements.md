@@ -3,7 +3,16 @@ Things to check:
 1. Retry and pass validation error message to the LLM in the retry request 
 2. rmeove all '\n's from prompt 
 3. validate just say no works 
-4. check how to get reasoning 
+
+Tournament
+Players:
+1. o4-mini (1.1 input, 4.4 output) ~5 cents a game
+2. o3 (2 input, 8 output) ~10 cents a game
+3. claude sonnet 4 (3 input, 15 output) ~15 cents a game
+4. claude opus 4 (15 input, 75 output) ~75 cents a game (not now too expensive)
+5. gemini 2.5-pro (1.25 input, 10 output) (~10 cents a game)
+6. deepseek r1 (0 input, 0 output)
+7. random turn bot (0 input, 0 output)
 
 
 Things to do:

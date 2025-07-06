@@ -27,7 +27,9 @@ class LLMHandler():
     def _extract_json(response):
         response = response.json()
         text = response['choices'][0]['message']['content']
-        logger.info(f"_extract_json response text: {text}")
+        reasoning = response['choices'][0]['message']['reasoning']
+        logger.info(f"=== LLM REASONING === \n{reasoning}\n===END LLM REASONING===")
+        logger.info(f"=== LLM OUTPUT === \n{text}\n===END LLM OUTPUT===")
         return json.loads(text)
         # return response
 
@@ -439,6 +441,7 @@ class LLMPlayer(Player, LLMHandler):
         try:
             response = self.call_llm(
                 'wants_to_negate_prompt.j2',
+                response_format="negate",
                 player=self,
                 action=str(action),
                 game_state=game_state_dict,

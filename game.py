@@ -10,7 +10,7 @@ from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAW
 from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini
 import logging 
 import time
-
+import os 
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -45,6 +45,8 @@ class Game:
                 player.add_card_to_hand(card)
         
         self.game_winner = None
+        player_names_for_file = "_".join([p.name.replace("/", "_") for p in self.players])
+        self.game_identifier = f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{player_names_for_file}_game"
         print("Initial hands dealt.")
 
         print("Game Setup Complete.")
@@ -61,7 +63,7 @@ class Game:
             "winner": self.game_winner,
             "turn_count": self.turn_count,
         }
-        with open(f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{'_'.join([p.name.replace("/", "_") for p in self.players])}_game.json", "w") as f:
+        with open(f"logs/{self.game_identifier}/result.json", "w") as f:
             json.dump(things_to_save, f, indent=4)
     
     def run_game(self):
@@ -145,6 +147,7 @@ class Game:
             cards_to_discard = player.choose_cards_to_discard(num_cards_to_discard, self.to_json(), self.game_history)
             # TODO: Separate out the functions where a player chooses what to do, and the functions that control player state?
             for card in cards_to_discard:
+                self.add_to_game_history(f"{player.name} discards {card}")
                 player.remove_card_from_hand(card)
             if player.cards_in_hand > MAX_HAND_SIZE:
                 raise ValueError(f"Player {player.name} still has {player.cards_in_hand} cards in hand. player hand: {player.hand}")
@@ -603,16 +606,16 @@ class TestPlayer(Player):
                 return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=target_player_names)
         return None
 
-def setup_logging():
+def setup_logging(log_file_name: str):
+    os.makedirs(f'logs/{log_file_name}', exist_ok=True)
     logging.basicConfig(
-        filename='deal.log',
+        filename=f'logs/{log_file_name}/prompts.log',
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )  
 
 # Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":
-    setup_logging()
     players = [
         TestPlayer(name="Alice"),
         # TestPlayer(name="Bob"),
@@ -625,4 +628,5 @@ if __name__ == "__main__":
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)
+    setup_logging(game.game_identifier)
     game.run_game()

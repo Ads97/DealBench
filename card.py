@@ -418,7 +418,7 @@ class PropertySet():
 
     def to_json(self) -> Dict[str, Any]:
         return {
-            "set_color": self.set_color if self.set_color else "Wild cards",
+            "set_color": self.set_color.name if self.set_color else "Wild cards",
             "cards": [card.to_json() for card in self.cards],
             "number_for_full_set": self.number_for_full_set,
             "is_full_set": self.is_full_set,

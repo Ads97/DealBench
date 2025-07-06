@@ -129,7 +129,7 @@ class Player(ABC): # Inherit from ABC
             "banked_cards": [card.to_json() for card in self.bank],
             "bank_value": self.get_bank_value(),
             "property_sets": {
-                color: prop_set.to_json()
+                color.name: prop_set.to_json()
                 for color, prop_set in self.property_sets.items()
             }
         }
@@ -139,7 +139,7 @@ class Player(ABC): # Inherit from ABC
             "banked_cards": [card.to_json() for card in self.bank],
             "bank_value": self.get_bank_value(),
             "property_sets": {
-                color: prop_set.to_json()
+                color.name: prop_set.to_json()
                 for color, prop_set in self.property_sets.items()
             }
         }

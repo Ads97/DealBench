@@ -2,3 +2,4 @@ python-dotenv
 requests
 Jinja2
 tenacity
+trio

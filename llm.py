@@ -178,12 +178,35 @@ class LLMHandler():
                         }
                     }
                 }
+            case "negate":
+                json_template = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "wants_to_negate",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "reasoning": {
+                                    "type": "string",
+                                    "description": "Reasoning on whether you want to play the just say no card"
+                                },
+                                "use_just_say_no": {
+                                    "type": "boolean",
+                                    "description": "Whether you want to play the just say no card"
+                                }
+                            },
+                            "required": ["reasoning", "use_just_say_no"],
+                            "additionalProperties": False
+                        }
+                    }
+                }
         return json_template
 
     def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Dict[str, Any]:
         """Call the LLM with a rendered template."""
         prompt = self._render_template(template_name, **template_kwargs)
-        logger.info(f"===PROMPT===\n{prompt}\n===END PROMPT===")
+        logger.info(f"===PROMPT=== {template_name} \n{prompt}\n===END PROMPT===")
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
             "Content-Type": "application/json"
@@ -408,7 +431,6 @@ class LLMPlayer(Player, LLMHandler):
 
     def wants_to_negate(self, action: Action, game_state_dict: dict, game_history: List[str]) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
-        return None # keeping complexity low for now
         # Check if we have a Just Say No card
         just_say_no_count = len([c for c in self.hand if c.get_card_type() == CardType.ACTION_JUST_SAY_NO])
         if not just_say_no_count:

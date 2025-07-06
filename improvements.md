@@ -2,6 +2,8 @@ Things to check:
 
 1. Retry and pass validation error message to the LLM in the retry request 
 2. rmeove all '\n's from prompt 
+3. validate just say no works 
+4. check how to get reasoning 
 
 
 Things to do:

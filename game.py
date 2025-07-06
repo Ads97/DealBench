@@ -5,12 +5,12 @@ from player import Player
 from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
 from action import Action, ActionType, ActionPropertyInfo
 from rules_engine import RulesEngine
-import random 
-import sys
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
 from llm import qwen3_235b, deepseek_r1_0528, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini
 import logging 
+import time
+
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -53,6 +53,17 @@ class Game:
         print(message)
         self.game_history.append(message)
     
+    def save_game(self):
+        things_to_save = {
+            "game_history": self.game_history,
+            "players": [p.to_json(debug=True) for p in self.players],
+            "game_state": self.to_json(debug=True),
+            "winner": self.game_winner,
+            "turn_count": self.turn_count,
+        }
+        with open(f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{'_'.join([p.name.replace("/", "_") for p in self.players])}_game.json", "w") as f:
+            json.dump(things_to_save, f, indent=4)
+    
     def run_game(self):
         """Runs the main game loop until a winner is determined."""
         self.add_to_game_history("\n--- Starting Game --- ")
@@ -70,6 +81,7 @@ class Game:
 
         if self.game_winner:
             self.add_to_game_history(f"{self.game_winner} is the winner after {self.turn_count} turns!")
+            self.save_game()
 
     def _get_current_player(self):
         return self.players[self.turn_count%len(self.players)]

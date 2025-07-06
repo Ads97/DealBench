@@ -1,0 +1,98 @@
+import os
+import json
+import time
+import trio
+from typing import List, Dict, Any, Tuple
+
+from game import Game, setup_logging
+from player import Player
+
+
+class Tournament:
+    """Run a simple 1v1 round robin tournament."""
+
+    def __init__(self, players: List[Player], batch_size: int = 4):
+        if len(players) < 2:
+            raise ValueError("Tournament requires at least two players.")
+
+        # ensure unique player names
+        names = [p.name for p in players]
+        if len(names) != len(set(names)):
+            raise ValueError("Player names must be unique for a tournament.")
+
+        self.players = players
+        self.results: Dict[str, Dict[str, int]] = {
+            p.name: {"wins": 0, "losses": 0} for p in players
+        }
+        self.match_results: List[Dict[str, Any]] = []
+        self.tournament_identifier = (
+            f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_tournament"
+        )
+        self.log_dir = os.path.join("logs", self.tournament_identifier)
+        os.makedirs(self.log_dir, exist_ok=True)
+        self._lock = trio.Lock()
+        self.batch_size = batch_size
+
+    def _clone_player(self, player: Player) -> Player:
+        """Create a fresh instance of a player for a new game."""
+        try:
+            return player.__class__(getattr(player, "model_name", player.name))
+        except Exception:
+            return player.__class__(player.name)
+
+    async def _play_match(self, player_a: Player, player_b: Player):
+        fresh_players = [self._clone_player(player_a), self._clone_player(player_b)]
+        game = Game(fresh_players)
+        setup_logging(game.game_identifier)
+        await trio.to_thread.run_sync(game.run_game)
+        winner = game.game_winner
+        if winner is None:
+            raise RuntimeError("Game completed without a winner.")
+        loser = player_a.name if winner != player_a.name else player_b.name
+        async with self._lock:
+            self.results[winner]["wins"] += 1
+            self.results[loser]["losses"] += 1
+            self.match_results.append(
+                {
+                    "players": [player_a.name, player_b.name],
+                    "winner": winner,
+                    "game_identifier": game.game_identifier,
+                }
+            )
+
+    async def _run_async(self):
+        matches: List[Tuple[Player, Player]] = [
+            (self.players[i], self.players[j])
+            for i in range(len(self.players))
+            for j in range(i + 1, len(self.players))
+        ]
+
+        for batch_start in range(0, len(matches), self.batch_size):
+            batch = matches[batch_start : batch_start + self.batch_size]
+            async with trio.open_nursery() as nursery:
+                for a, b in batch:
+                    nursery.start_soon(self._play_match, a, b)
+
+        self.save_results()
+
+    def run(self):
+        trio.run(self._run_async)
+
+    def rankings(self) -> List[Dict[str, Any]]:
+        ordered = sorted(
+            self.results.items(),
+            key=lambda item: (-item[1]["wins"], item[1]["losses"]),
+        )
+        return [
+            {"player": name, "wins": stats["wins"], "losses": stats["losses"]}
+            for name, stats in ordered
+        ]
+
+    def save_results(self):
+        tournament_data = {
+            "matches": self.match_results,
+            "results": self.results,
+            "rankings": self.rankings(),
+        }
+        with open(os.path.join(self.log_dir, "tournament_results.json"), "w") as f:
+            json.dump(tournament_data, f, indent=4)

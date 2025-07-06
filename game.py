@@ -51,8 +51,9 @@ class Game:
 
         print("Game Setup Complete.")
 
-    def add_to_game_history(self, message: str):
-        print(message)
+    def add_to_game_history(self, message: str, debug=False):
+        if debug:
+            print(message)
         self.game_history.append(message)
     
     def save_game(self):
@@ -624,9 +625,9 @@ if __name__ == "__main__":
         # TestPlayer(name="Bob"),
         # meta_maverick,
         # gpt_4_1_nano,
-        deepseek_r1,
+        # deepseek_r1,
         # qwen3_235b,
-        # claude_4_sonnet,
+        claude_4_sonnet,
         # openai_o4_mini,
         # openai_o3,
         # gemini_2_5_pro

@@ -1,8 +1,8 @@
 Things to check:
-
-1. Retry and pass validation error message to the LLM in the retry request 
-2. rmeove all '\n's from prompt 
-3. validate just say no works 
+1. add logging changes
+2. test tournament. what's max batch size?
+3. get claude sonnet to work
+4. begin tournament!
 
 Tournament
 Players:
@@ -23,8 +23,3 @@ Things to do:
 5. Get twitter premium
 
 Separate idea: indic games repo?
-
-test with test players 
-Logging collisions
-setup_logging in game.py uses logging.basicConfig, which configures the global logger. When multiple games run concurrently (the tournament launches them in parallel via trio), all games may end up writing to the same log file. Consider modifying setup_logging to create a per‑game logger with its own FileHandler
-Output Volume – The Game class prints a large amount of information to stdout. Running many concurrent games may produce a lot of output, which can slow execution or clutter logs.

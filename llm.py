@@ -23,11 +23,19 @@ class LLMHandler():
         self.url = "https://openrouter.ai/api/v1/chat/completions"
         self.template_env = Environment(loader=FileSystemLoader('prompts'))
 
-    @staticmethod
-    def _extract_json(response):
-        response = response.json()
+    def _extract_json(self, response):
+        if self.model_name.startswith("anthropic"):
+            response = json.loads(response.text.strip())
+        else:
+            response = response.json()
         text = response['choices'][0]['message']['content']
-        reasoning = response['choices'][0]['message']['reasoning']
+        if self.model_name.startswith("anthropic"):
+            reasoning, sep, text = text.partition("{")
+            reasoning = reasoning.strip()
+            text = sep + text
+            text = text.replace("`","").strip()
+        else:
+            reasoning = response['choices'][0]['message']['reasoning']
         logger.info(f"=== LLM REASONING === \n{reasoning}\n===END LLM REASONING===")
         logger.info(f"=== LLM OUTPUT === \n{text}\n===END LLM OUTPUT===")
         return json.loads(text)
@@ -482,10 +490,10 @@ if __name__ == "__main__":
     # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
     # handler = LLMHandler(model_name="openai/o4-mini")
     # handler = LLMHandler(model_name="openai/o3")
-    # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
+    handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
     # handler = LLMHandler(model_name="google/gemini-2.5-pro")
-    handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
-    handler.call_llm("test_action.j2", response_format="action")
+    # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
+    # handler.call_llm("test_action.j2", response_format="action")
     # handler.call_llm("test_payment.j2", response_format="payment")
-    # handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=2)
-    # handler.call_llm("test_negate.j2", response_format="negate")
+    handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=1)
+    # handler.call_llm("test_just_say_no.j2", response_format="negate")

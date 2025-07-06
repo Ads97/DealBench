@@ -1,124 +1,31 @@
 You are an AI player in a Monopoly Deal game and have a "Just Say No" card in your hand. Another player has just played an action against you:
 
-Action: ['Alice']
+Action: Alice has just performed action 'sly deal - steal property Power Plant' on anthropic/claude-4-sonnet-20250522.
 
 Decide if you want to play the "just say no" card to negate this action or not at this time.
 
 Here's the set of actions that have occurred so far in the game:
 
-# History
-
-* Play order: deepseek/deepseek-r1-0528:free, Alice
-
-* Dealing initial 5 cards to each player...
-
-* 
---- Starting Game --- 
-
-* 
---- deepseek/deepseek-r1-0528:free's Turn ---
-
-* deepseek/deepseek-r1-0528:free starts turn.
-
-* deepseek/deepseek-r1-0528:free has played 0/3 actions.
-
-* deepseek/deepseek-r1-0528:free added property Property Wildcard (Any Color) to PropertyColor.RED
-
-* deepseek/deepseek-r1-0528:free has played 1/3 actions.
-
-* deepseek/deepseek-r1-0528:free received 2 cards from Pass Go. deepseek/deepseek-r1-0528:free now has 7 cards.
-
-* deepseek/deepseek-r1-0528:free has played 2/3 actions.
-
-* deepseek/deepseek-r1-0528:free added property Ruby Rd to PropertyColor.RED
-
-* deepseek/deepseek-r1-0528:free ends turn.
-
-* 
---- Alice's Turn ---
-
-* Alice starts turn.
-
-* Alice has played 0/3 actions.
-
-* Alice added property West Line RR to PropertyColor.RAILROAD
-
-* Alice has played 1/3 actions.
-
-
+# History* Play order: Alice, anthropic/claude-4-sonnet-20250522* Dealing initial 5 cards to each player...* 
+--- Starting Game --- * 
+--- Alice's Turn ---* Alice starts turn.* Alice has played 0/3 actions.* Alice banked $2M* Alice has played 1/3 actions.* Alice banked $4M* Alice has played 2/3 actions.* Alice banked $10M* Alice ends turn.* 
+--- anthropic/claude-4-sonnet-20250522's Turn ---* anthropic/claude-4-sonnet-20250522 starts turn.* anthropic/claude-4-sonnet-20250522 has played 0/3 actions.* anthropic/claude-4-sonnet-20250522 added property Power Plant to PropertyColor.UTILITY* anthropic/claude-4-sonnet-20250522 has played 1/3 actions.* Alice paid 2M (1M requested) to anthropic/claude-4-sonnet-20250522 with cards [(MoneyCard(name='$2M', value=2), 'bank')] for rent.* anthropic/claude-4-sonnet-20250522 has played 2/3 actions.* anthropic/claude-4-sonnet-20250522 added property Meadow Walk to PropertyColor.GREEN* anthropic/claude-4-sonnet-20250522 ends turn.* 
+--- Alice's Turn ---* Alice starts turn.* Alice has played 0/3 actions.
 # Game state:
 - Current player Turn: Alice
-- Players: ['deepseek/deepseek-r1-0528:free', 'Alice']
-- Turn count: 1
-- Actions played in current turn: 1 / 3
+- Players: ['Alice', 'anthropic/claude-4-sonnet-20250522']
+- Turn count: 2
+- Actions played in current turn: 0 / 3
 
 Your current game state:
-- Hand:
-
-
-- - name: $3M, value: 3, type: MONEY
-
-- - name: House, value: 3, type: ACTION_BUILDING, building_type: house
-
-- - name: Sunset Blvd, value: 2, type: PROPERTY, set_color: ORANGE, rent_values: [1, 3, 5], num_properties_for_full_set: 3
-
-- - name: Emerald Dr, value: 4, type: PROPERTY, set_color: GREEN, rent_values: [2, 4, 7], num_properties_for_full_set: 3
-
-- - name: Just Say No!, value: 4, type: ACTION_JUST_SAY_NO
-
-- - name: Debt Collector, value: 3, type: ACTION_DEBT_COLLECTOR
-
-
-- Bank (Total value: 0):
-
-  None.
-
-- Property Sets:
-
-  
-  - RED:
-    Cards:
-    
-    
-      - name: Property Wildcard (Any Color), value: 0, type: PROPERTY_WILD, available_colors: ['BROWN', 'LIGHT_BLUE', 'PINK', 'ORANGE', 'RED', 'YELLOW', 'GREEN', 'DARK_BLUE', 'RAILROAD', 'UTILITY'], current_color: RED
-    
-      - name: Ruby Rd, value: 3, type: PROPERTY, set_color: RED, rent_values: [2, 3, 6], num_properties_for_full_set: 3
-    
-    
-    Full Set: False
+- Hand:- - name: Pass Go, value: 1, type: ACTION_PASS_GO- - name: $5M, value: 5, type: MONEY- - name: Just Say No!, value: 4, type: ACTION_JUST_SAY_NO- - name: Forced Deal, value: 3, type: ACTION_FORCED_DEAL- Bank (Total value: 2):- - name: $2M, value: 2, type: MONEY- Property Sets:- UTILITY:
+    Cards:- name: Power Plant, value: 2, type: PROPERTY, set_color: UTILITY, rent_values: [1, 2], num_properties_for_full_set: 2Full Set: False
     House: False, Hotel: False
-    Rent: 
-  
-
-
-Other players:
-
-  
-
-  
-- Alice:
-  - Bank (Total value: 0):
-    
-    None.
-    
-  - Property Sets:
-    
-      
-    - :
-        Cards:
-        
-        
-        - name: West Line RR, value: 2, type: PROPERTY, set_color: RAILROAD, rent_values: [1, 2, 3, 4], num_properties_for_full_set: 4
-        
-        
-        Full Set: False
-        House: False, Hotel: False
-        Rent: 1
-      
-    
-  
-
-
+    Rent: - GREEN:
+    Cards:- name: Meadow Walk, value: 4, type: PROPERTY, set_color: GREEN, rent_values: [2, 4, 7], num_properties_for_full_set: 3Full Set: False
+    House: False, Hotel: False
+    Rent: Other players:- Alice:
+  - Bank (Total value: 14):- name: $4M, value: 4, type: MONEY- name: $10M, value: 10, type: MONEY- Property Sets:None.
 
 Your response should be a JSON object with the following structure:
 {

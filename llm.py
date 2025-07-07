@@ -300,7 +300,7 @@ class LLMPlayer(Player, LLMHandler):
             return None
         elif not contains_alpha(string):
             return None
-        elif string.lower().startswith("string"): # gemini-2.5-pro does this
+        elif "string" in string.lower(): # gemini-2.5-pro does this
             return None
         return string
             
@@ -450,8 +450,8 @@ class LLMPlayer(Player, LLMHandler):
     def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> bool:
         """Determine if the player wants to negate an action with a Just Say No card."""
         # Check if we have a Just Say No card
-        just_say_no_count = len([c for c in self.hand if c.get_card_type() == CardType.ACTION_JUST_SAY_NO])
-        if not just_say_no_count:
+        just_say_no_cards = [c for c in self.hand if c.get_card_type() == CardType.ACTION_JUST_SAY_NO]
+        if not len(just_say_no_cards):
             return None
             
         try:
@@ -465,7 +465,10 @@ class LLMPlayer(Player, LLMHandler):
                 game_history=game_history
             )
             
-            return response.get('negate', False)
+            if response.get('negate', False):
+                return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=just_say_no_cards[0], target_player_names=[target_player_name])
+            
+            return None
             
         except Exception as e:
             print(f"Error in wants_to_negate: {e}")
@@ -493,7 +496,7 @@ if __name__ == "__main__":
     handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
     # handler = LLMHandler(model_name="google/gemini-2.5-pro")
     # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
-    # handler.call_llm("test_action.j2", response_format="action")
+    handler.call_llm("test_action.j2", response_format="action")
     # handler.call_llm("test_payment.j2", response_format="payment")
-    handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=1)
+    # handler.call_llm("test_discard.j2", response_format="discard", num_cards_to_discard=1)
     # handler.call_llm("test_just_say_no.j2", response_format="negate")

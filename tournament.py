@@ -5,7 +5,7 @@ import trio
 from typing import List, Dict, Any, Tuple
 
 from game import Game, setup_logging
-from player import Player
+from player import Player, TestPlayer
 
 
 class Tournament:
@@ -96,3 +96,19 @@ class Tournament:
         }
         with open(os.path.join(self.log_dir, "tournament_results.json"), "w") as f:
             json.dump(tournament_data, f, indent=4)
+
+if __name__ == "__main__":
+    players = [
+        TestPlayer(name="test_player_1"),
+        TestPlayer(name="test_player_2"),
+        TestPlayer(name="test_player_3"),
+        TestPlayer(name="test_player_4"),
+        TestPlayer(name="test_player_5"),
+        TestPlayer(name="test_player_6"),
+        TestPlayer(name="test_player_7"),
+        TestPlayer(name="test_player_8"),
+        TestPlayer(name="test_player_9"),
+        TestPlayer(name="test_player_10"),
+    ]
+    tournament = Tournament(players)
+    tournament.run()

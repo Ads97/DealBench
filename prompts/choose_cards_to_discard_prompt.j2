@@ -6,7 +6,7 @@ You are an AI player in a Monopoly Deal game and need to discard exactly {{ num_
 
 Choose the {{ num_cards_to_discard }} cards to discard from your hand.
 
-Your response must be a JSON object with 'reasoning' and 'card_names' fields, for example:
+Your response must be a JSON object with 'reasoning' and 'card_names' fields. The card names must be exact. For example:
 {
   "reasoning": "I'm discarding these cards because...",
   "card_names": ["Card Name 1", "Card Name 2"]

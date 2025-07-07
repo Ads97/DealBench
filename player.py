@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Optional
 
 from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
-from action import ActionPropertyInfo
+from action import ActionPropertyInfo, Action
 
 class Player(ABC): # Inherit from ABC
     """Abstract Base Class for a player in the game."""
@@ -183,6 +183,6 @@ class Player(ABC): # Inherit from ABC
         pass
 
     @abstractmethod
-    def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> Optional[Card]:
+    def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         pass
         

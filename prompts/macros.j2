@@ -12,7 +12,7 @@
 Your current game state:
 - Hand:
 {%- if perspective_player.hand -%}
-{%- for card in perspective_player.hand -%}
+{%- for card in perspective_player.hand %}
 - - {{ render_card(card.to_json()) }}
 {%- endfor -%}
 {%- else -%}
@@ -25,7 +25,7 @@ Your current game state:
 {%- endfor -%}
 {%- else -%}
   None.
-{%- endif -%}
+{%- endif %}
 - Property Sets:
 {%- if perspective_player.property_sets -%}
 {%- for color, prop_set in perspective_player.property_sets.items() -%}
@@ -40,11 +40,11 @@ Your current game state:
     {%- endif -%}
     Full Set: {{ prop_set.is_full_set }}
     House: {{ prop_set.has_house }}, Hotel: {{ prop_set.has_hotel }}
-    Rent: {{ prop_set.rent }}
+    Rent: {%- if prop_set.rent -%}{{ prop_set.rent }}{%- else -%}None.{%- endif -%}
   {%- endfor -%}
 {%- else -%}
  None.
-{%- endif -%}
+{%- endif %}
 
 Other players:
 {%- for player in game_state.players -%}
@@ -57,7 +57,7 @@ Other players:
     {%- endfor -%}
     {%- else -%}
     None.
-    {%- endif -%}
+    {%- endif %}
   - Property Sets:
     {%- if player.property_sets -%}
       {%- for color, prop_set in player.property_sets.items() -%}
@@ -85,7 +85,7 @@ Other players:
 Here's the set of actions that have occurred so far in the game:
 
 # History
-{%- for action in game_history -%}
-* {{ action }}
-{%- endfor -%}
+{%- for action in game_history %}
+* {{ action | replace('\n', '') | trim }}
+{% endfor -%}
 {%- endmacro -%}

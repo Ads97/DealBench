@@ -9,6 +9,9 @@ class RulesEngine:
     def validate_action(action: Action, current_player: Player, target_players: List[Player], actions_played: Optional[int]) -> Tuple[bool, Optional[str]]:
         """Validates if a proposed action is legal according to game rules."""
         
+        if not action:
+            return True, None
+        
         if action.action_type == ActionType.PASS:
             return True, None
         
@@ -296,10 +299,6 @@ class RulesEngine:
     
     @staticmethod
     def _validate_just_say_no(action: Action) -> Tuple[bool, Optional[str]]:
-        if len(action.target_player_names) != 1:
-            return False, f"Validation Error: Just Say No must target exactly one player. {action}"
-        if action.target_property_set is not None or action.rent_color is not None:
-            return False, f"Validation Error: Just Say No should not specify property set or rent color. {action}"
         return True, None
         
 

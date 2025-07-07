@@ -264,6 +264,8 @@ class Game:
                 raise ValueError(f"Unexpected action type: {action.card.get_card_type()}")
     
     def _get_money_from(self, source_player: Player, target_player: Player, amount: int, reason: str):
+        if amount==0:
+            return True
         if self._attempt_just_say_no(f"collect {amount} for {reason}", source_player, target_player):
             self.add_to_game_history(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
@@ -393,22 +395,21 @@ class Game:
         action_chain_str = f"{source_player.name} has just performed action '{reason}' on {target_player.name}."
 
         while True:
-            jsn_action = current.wants_to_negate(action_chain_str=action_chain_str, target_player_name=other.name, game_state_dict=self.to_json(), game_history=self.game_history)
-            if jsn_action is None:
-                break
-            valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
+            valid = False
             attempts = 0
-            while not valid and attempts < 2:
-                print(f"Invalid Just Say No action: {reason}. Trying again.")
-                jsn_action = current.wants_to_negate(action_chain_str=action_chain_str, target_player_name=other.name, game_state_dict=self.to_json(), game_history=self.game_history)
-                if jsn_action is None:
-                    break
-                valid, reason = self.rules_engine.validate_action(jsn_action, current, [other], None)
+            while not valid and attempts < 3:
+                if attempts:
+                    print(f"Invalid Just Say No action: {reason}. Trying again.")
+                action = current.wants_to_negate(action_chain_str=action_chain_str, target_player_name=other.name, game_state_dict=self.to_json(), game_history=self.game_history)
+                valid, reason = self.rules_engine.validate_action(action, current, [other], None)
                 attempts += 1
+
             if not valid:
                 self.add_to_game_history("Skipping Just Say No due to invalid inputs.")
                 break
-            current.remove_card_from_hand(jsn_action.card)
+            if not action:
+                break
+            current.remove_card_from_hand(action.card)
             self.add_to_game_history(f"{current.name} played Just Say No!")
             action_chain_str += f"\n{current.name} played Just Say No!"
             jsn_played = True
@@ -621,16 +622,16 @@ def setup_logging(log_file_name: str):
 # Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":
     players = [
-        TestPlayer(name="Alice"),
+        # TestPlayer(name="Alice"),
         # TestPlayer(name="Bob"),
         # meta_maverick,
         # gpt_4_1_nano,
         # deepseek_r1,
         # qwen3_235b,
-        claude_4_sonnet,
+        # claude_4_sonnet,
         # openai_o4_mini,
-        # openai_o3,
-        # gemini_2_5_pro
+        openai_o3,
+        gemini_2_5_pro
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

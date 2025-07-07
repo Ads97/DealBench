@@ -8,10 +8,10 @@ Payment rules:
 1. You must pay the exact amount if possible
 2. You can use any combination of money cards from your bank and property cards from your property sets
 
-Your response MUST be a JSON array with reasoning and a tuple of card names (exact) and source (bank or properties) to use for payment, for example:
+Your response MUST be a JSON array with the fields 'reasoning' and 'payment'. 'payment' is an array where every element is a dict with fields 'card_name' and 'source'. the card name must be exact and source is one of 'bank' or 'properties'. For example:
 {
   "reasoning": "Reasoning on the cards you want to use to pay.",
-  "payment": "[(card_name_1, bank), (card_name_2, properties)]"
+  "payment": [{"card_name": "Card Name 1", "source": "bank"}, {"card_name": "Card Name 2", "source": "properties"}]
 }
 
 If you have absolutely no bank or property cards to pay with, return an empty array [] for "payment". If the sum total of your bank and property cards is less than the amount you need to pay, return all your bank and property cards in "payment".

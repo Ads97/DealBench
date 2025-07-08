@@ -11,6 +11,7 @@ from llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_s
 import logging 
 import time
 import os 
+logger = logging.getLogger(__name__)
 
 class Game:
     """Orchestrates the Monopoly Deal game flow."""
@@ -26,10 +27,10 @@ class Game:
             raise ValueError("Game requires between 2 and 5 players.")
 
         self.game_history = []
-        print("Initializing Game...")
+        logger.info("Initializing Game...")
         # 1. Create and shuffle the deck
         self.deck: Deck = Deck() 
-        print(f"Created deck with {self.deck.total_cards} cards.")
+        logger.info(f"Created deck with {self.deck.total_cards} cards.")
         random.shuffle(players)
         self.players = players
         self.add_to_game_history(f"Play order: {', '.join([p.name for p in players])}")
@@ -47,13 +48,13 @@ class Game:
         self.game_winner = None
         player_names_for_file = "_".join([p.name.replace("/", "_") for p in self.players])
         self.game_identifier = f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{player_names_for_file}_game"
-        print("Initial hands dealt.")
+        logger.info("Initial hands dealt.")
 
-        print("Game Setup Complete.")
+        logger.info("Game Setup Complete.")
 
     def add_to_game_history(self, message: str, debug=False):
         if debug:
-            print(message)
+            logger.info(message)
         self.game_history.append(message)
     
     def save_game(self):
@@ -109,7 +110,7 @@ class Game:
             attempts = 0
             while not valid and attempts < 2:
                 if error_reason:
-                    print(f"Invalid action chosen: {error_reason}. Trying again.")
+                    logger.info(f"Invalid action chosen: {error_reason}. Trying again.")
                 try:
                     action = player.get_action(self.to_json(), self.game_history)
                     target_players = [self._get_player_by_name(n) for n in action.target_player_names]
@@ -133,9 +134,9 @@ class Game:
             if action.action_type != ActionType.MOVE_PROPERTY:
                 self.actions_played += 1  # Move property does not count towards actions per turn
             if successfully_executed:
-                print(f"Action successful: {action}")
+                logger.info(f"Action successful: {action}")
             else:
-                print(f"Could not execute action: {action}")
+                logger.info(f"Could not execute action: {action}")
             has_won = self.rules_engine.check_win_condition(player)
             if has_won:
                     self.game_winner = player
@@ -273,7 +274,7 @@ class Game:
         valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
         attempts = 0
         while not valid and attempts < 2:
-            print(f"Invalid payment: {reason_msg}. Trying again.")
+            logger.error(f"Invalid payment: {reason_msg}. Trying again.")
             payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json(), game_history=self.game_history)
             valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
             attempts += 1
@@ -399,7 +400,7 @@ class Game:
             attempts = 0
             while not valid and attempts < 3:
                 if attempts:
-                    print(f"Invalid Just Say No action: {reason}. Trying again.")
+                    logger.error(f"Invalid Just Say No action: {reason}. Trying again.")
                 action = current.wants_to_negate(action_chain_str=action_chain_str, target_player_name=other.name, game_state_dict=self.to_json(), game_history=self.game_history)
                 valid, reason = self.rules_engine.validate_action(action, current, [other], None)
                 attempts += 1

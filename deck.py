@@ -9,6 +9,8 @@ from card import (
     SlyDealCard, ForcedDealCard, DealBreakerCard
 )
 from deck_config import DECK_CONFIGURATION, RENT_INFO # Import the configuration
+import logging
+logger = logging.getLogger(__name__)
 
 class Deck:
     """Manages the deck of undrawn cards for the game."""
@@ -22,7 +24,7 @@ class Deck:
     def _create_new_deck(self):
         """Populates and shuffles the deck based on DECK_CONFIGURATION."""
         self._cards = [] # Reset the deck
-        print("Creating new deck from configuration...")
+        logger.info("Creating new deck from configuration...")
         card_creation_errors = []
 
         for item in DECK_CONFIGURATION:
@@ -34,14 +36,13 @@ class Deck:
 
 
         if card_creation_errors:
-            print("\n--- Errors during deck creation ---")
+            logger.error("\n--- Errors during deck creation ---")
             for error in card_creation_errors:
-                print(error)
-            print("-------------------------------------")
+                logger.error(error)
             # Decide if you want to raise an error or continue with a partial deck
             # raise RuntimeError("Errors occurred during deck creation.")
 
-        print(f"Deck created with {len(self._cards)} cards.")
+        logger.info(f"Deck created with {len(self._cards)} cards.")
         self.shuffle()
 
     @staticmethod
@@ -153,7 +154,7 @@ class Deck:
     def shuffle(self):
         """Shuffles the cards currently in the deck."""
         random.shuffle(self._cards)
-        print("Deck shuffled.")
+        logger.info("Deck shuffled.")
 
     def draw_card(self) -> Optional[Card]:
         """Removes and returns the top card from the deck. Returns None if empty."""

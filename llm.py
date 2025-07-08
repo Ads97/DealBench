@@ -260,7 +260,7 @@ class LLMHandler():
                     return self._extract_json(response)
 
                 # We got a 500 – decide whether to retry.
-                print(f"Attempt {attempt}: received 500 from server.")
+                logger.error(f"Attempt {attempt}: received 500 from server.")
                 if attempt == max_retries:
                     response.raise_for_status()   # will raise HTTPError
             except RequestException as err:
@@ -441,10 +441,10 @@ class LLMPlayer(Player, LLMHandler):
                 if card:
                     payment_cards.append((card, source))
                 else:
-                    print(f"Warning: Card '{card_name}' with source '{source}' not found in player's {source}.")
+                    logger.error(f"Warning: Card '{card_name}' with source '{source}' not found in player's {source}.")
             return payment_cards
         except Exception as e:
-            print(f"Exception. Error in provide_payment: {e}")
+            logger.error(f"Exception. Error in provide_payment: {e}")
             return None
 
     def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> bool:
@@ -471,7 +471,7 @@ class LLMPlayer(Player, LLMHandler):
             return None
             
         except Exception as e:
-            print(f"Error in wants_to_negate: {e}")
+            logger.error(f"Error in wants_to_negate: {e}")
             return None
 
 qwen3_235b = LLMPlayer(model_name="qwen/qwen3-235b-a22b:free")

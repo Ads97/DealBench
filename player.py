@@ -3,6 +3,8 @@ from typing import Any, List, Dict, Optional
 
 from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
 from action import ActionPropertyInfo, Action
+import logging
+logger = logging.getLogger(__name__)
 
 class Player(ABC): # Inherit from ABC
     """Abstract Base Class for a player in the game."""
@@ -59,7 +61,7 @@ class Player(ABC): # Inherit from ABC
         try:
             self.bank.remove(card)
         except ValueError:
-            print(f"Error: Card {card} not found in bank.") # Or raise a custom exception
+            logger.error(f"Error: Card {card} not found in bank.") # Or raise a custom exception
 
     def add_card_to_properties(self, card, color = None):
         if color is None:

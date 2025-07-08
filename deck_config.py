@@ -4,6 +4,8 @@
 # Assume card.py is in the same directory or accessible via PYTHONPATH
 from card import CardType, PropertyColor
 import sys 
+import logging
+logger = logging.getLogger(__name__)
 # Define the deck as a list of dictionaries.
 # Each dictionary represents a specific card type and its properties.
 # 'count' specifies how many copies of this card are in the deck.
@@ -110,11 +112,11 @@ DECK_CONFIGURATION = [
 # Standard Monopoly Deal has 106 cards (sometimes listed as 110 with extra blanks/ads)
 # Let's sum our counts:
 total_cards = sum(item['count'] for item in DECK_CONFIGURATION)
-print(f"Total cards configured: {total_cards}")
+logger.info(f"Total cards configured: {total_cards}")
 
 EXPECTED_TOTAL = 106
 if total_cards != EXPECTED_TOTAL:
-    print(f"WARNING: Configured card count ({total_cards}) does not match expected ({EXPECTED_TOTAL})!")
+    logger.warning(f"WARNING: Configured card count ({total_cards}) does not match expected ({EXPECTED_TOTAL})!")
 
 INITIAL_HAND_SIZE = 5
 MAX_HAND_SIZE = 7

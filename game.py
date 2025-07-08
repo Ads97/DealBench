@@ -66,6 +66,7 @@ class Game:
             "winner": self.game_winner,
             "turn_count": self.turn_count,
         }
+        os.makedirs(f'logs/{self.game_identifier}', exist_ok=True)
         with open(f"logs/{self.game_identifier}/result.json", "w") as f:
             json.dump(things_to_save, f, indent=4)
     

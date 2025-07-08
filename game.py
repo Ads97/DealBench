@@ -613,12 +613,46 @@ class TestPlayer(Player):
         return None
 
 def setup_logging(log_file_name: str):
-    os.makedirs(f'logs/{log_file_name}', exist_ok=True)
-    logging.basicConfig(
-        filename=f'logs/{log_file_name}/prompts.log',
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )  
+    """Set up a dedicated logger for a single game.
+
+    Each game in a tournament should log to its own file to avoid mixed log
+    messages when multiple games run concurrently.  This function creates a
+    new ``logging.Logger`` instance whose messages are written only to the
+    specified log file and replaces the module level ``logger`` used
+    throughout the code base.
+    """
+
+    global logger
+    os.makedirs(f"logs/{log_file_name}", exist_ok=True)
+
+    # Create a unique logger for this game and ensure it does not propagate to
+    # the root logger (which may have handlers for other games).
+    game_logger = logging.getLogger(log_file_name)
+    game_logger.setLevel(logging.INFO)
+    game_logger.propagate = False
+
+    file_handler = logging.FileHandler(f"logs/{log_file_name}/prompts.log")
+    file_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    file_handler.setFormatter(formatter)
+
+    # Remove any existing handlers so we don't accumulate handlers across games
+    game_logger.handlers = []
+    game_logger.addHandler(file_handler)
+
+    logger = game_logger
+
+    # Update loggers in other modules to use this game's logger as their parent
+    import deck, deck_config, llm, player
+
+    deck.logger = logger.getChild("deck")
+    deck_config.logger = logger.getChild("deck_config")
+    llm.logger = logger.getChild("llm")
+    player.logger = logger.getChild("player")
+
+    return logger
 
 # Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":

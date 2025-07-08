@@ -4,14 +4,14 @@ import time
 import trio
 from typing import List, Dict, Any, Tuple
 
-from game import Game, setup_logging
-from player import Player, TestPlayer
+from game import Game, TestPlayer, setup_logging
+from player import Player
 
 
 class Tournament:
     """Run a simple 1v1 round robin tournament."""
 
-    def __init__(self, players: List[Player], batch_size: int = 4):
+    def __init__(self, players: List[Player], batch_size: int = 20):
         if len(players) < 2:
             raise ValueError("Tournament requires at least two players.")
 
@@ -42,8 +42,8 @@ class Tournament:
 
     async def _play_match(self, player_a: Player, player_b: Player):
         fresh_players = [self._clone_player(player_a), self._clone_player(player_b)]
+        print(f"starting game between {' and '.join([player.name for player in fresh_players])}")
         game = Game(fresh_players)
-        setup_logging(game.game_identifier)
         await trio.to_thread.run_sync(game.run_game)
         winner = game.game_winner
         if winner is None:
@@ -61,6 +61,7 @@ class Tournament:
             )
 
     async def _run_async(self):
+        setup_logging(self.tournament_identifier)
         matches: List[Tuple[Player, Player]] = [
             (self.players[i], self.players[j])
             for i in range(len(self.players))

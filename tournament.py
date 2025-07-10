@@ -99,6 +99,21 @@ class Tournament:
         with open(os.path.join(self.log_dir, "tournament_results.json"), "w") as f:
             json.dump(tournament_data, f, indent=4)
 
+def run_tournaments(players: List[Player], num_runs: int = 1, batch_size: int = 6):
+    """Run multiple tournaments sequentially.
+
+    Args:
+        players: List of players participating in each tournament.
+        num_runs: Number of tournaments to run.
+        batch_size: Number of games to play concurrently within a tournament.
+    """
+
+    for i in range(num_runs):
+        print(f"Starting tournament {i + 1} of {num_runs}")
+        tournament = Tournament(players, batch_size=batch_size)
+        tournament.run()
+
+
 if __name__ == "__main__":
     players = [
         # TestPlayer(name="test_player_1"),
@@ -115,7 +130,7 @@ if __name__ == "__main__":
         openai_o3,
         # claude_4_sonnet,
         # gemini_2_5_pro,
-        openai_o4_mini
+        openai_o4_mini,
     ]
-    tournament = Tournament(players)
-    tournament.run()
+
+    run_tournaments(players)

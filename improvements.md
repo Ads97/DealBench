@@ -1,8 +1,6 @@
-Things to check:
-1. add logging changes
-2. test tournament. what's max batch size?
-3. get claude sonnet to work
-4. begin tournament!
+Things to do:
+1. run more games at the same time 
+2. find a way to reduce gemini and claude costs 
 
 Tournament
 Players:

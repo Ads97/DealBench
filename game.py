@@ -238,7 +238,6 @@ class Game:
         target_property_set = action.target_property_set
         
         player.remove_card_from_properties(card)
-        # TODO: need to change the current color of wild property cards 
         player.add_card_to_properties(card, target_property_set)
 
         self.add_to_game_history(f"{player.name} moved property {card.name} to {target_property_set}")

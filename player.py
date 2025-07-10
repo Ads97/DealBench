@@ -63,7 +63,7 @@ class Player(ABC): # Inherit from ABC
         except ValueError:
             logger.error(f"Error: Card {card} not found in bank.") # Or raise a custom exception
 
-    def add_card_to_properties(self, card, color = None):
+    def add_card_to_properties(self, card, color=None):
         if color is None:
             if isinstance(card, WildPropertyCard):
                 color = card.current_color
@@ -71,6 +71,9 @@ class Player(ABC): # Inherit from ABC
                 color = card.set_color
             else:
                 raise ValueError(f"add_card_to_properties: Error: color is None for card {card}")
+        elif isinstance(card, WildPropertyCard):
+            card.current_color = color
+
         if color not in self.property_sets:
             self.property_sets[color] = PropertySet(card)
         else:

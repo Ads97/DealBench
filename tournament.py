@@ -59,6 +59,7 @@ class Tournament:
                     "game_identifier": game.game_identifier,
                 }
             )
+            print(f"Game over! Players: {player_a.name}, {player_b.name}.\nWinner: {winner}\nGame Identifier: {game.game_identifier}")
 
     async def _run_async(self):
         setup_logging(self.tournament_identifier)

@@ -23,3 +23,12 @@ Things to do:
 5. Get twitter premium
 
 Separate idea: indic games repo?
+
+
+Bug: (What I think happened):
+1. Randy had a wild (lt blue/brown) which he had set to light blue 
+2. Openai o4-mini acquired the property through debt collection
+3. Openai o4-mini used move property to move it to property set brown 
+4. Openai 04-mini tried adding another card to the property set and it broke because wild card still had color set as light blue. 
+
+Question: Do we want to allow step 2 -> step 4 without doing step 3? even if we dont we should not crash in this case. 

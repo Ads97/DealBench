@@ -6,12 +6,12 @@ from typing import List, Dict, Any, Tuple
 
 from game import Game, TestPlayer, setup_logging
 from player import Player
-
+from llm import claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro
 
 class Tournament:
     """Run a simple 1v1 round robin tournament."""
 
-    def __init__(self, players: List[Player], batch_size: int = 20):
+    def __init__(self, players: List[Player], batch_size: int = 6):
         if len(players) < 2:
             raise ValueError("Tournament requires at least two players.")
 
@@ -100,16 +100,21 @@ class Tournament:
 
 if __name__ == "__main__":
     players = [
-        TestPlayer(name="test_player_1"),
-        TestPlayer(name="test_player_2"),
-        TestPlayer(name="test_player_3"),
-        TestPlayer(name="test_player_4"),
-        TestPlayer(name="test_player_5"),
-        TestPlayer(name="test_player_6"),
-        TestPlayer(name="test_player_7"),
-        TestPlayer(name="test_player_8"),
-        TestPlayer(name="test_player_9"),
-        TestPlayer(name="test_player_10"),
+        # TestPlayer(name="test_player_1"),
+        # TestPlayer(name="test_player_2"),
+        # TestPlayer(name="test_player_3"),
+        # TestPlayer(name="test_player_4"),
+        # TestPlayer(name="test_player_5"),
+        # TestPlayer(name="test_player_6"),
+        # TestPlayer(name="test_player_7"),
+        # TestPlayer(name="test_player_8"),
+        # TestPlayer(name="test_player_9"),
+        # TestPlayer(name="test_player_10"),
+        TestPlayer(name="Randy"),
+        openai_o3,
+        # claude_4_sonnet,
+        # gemini_2_5_pro,
+        openai_o4_mini
     ]
     tournament = Tournament(players)
     tournament.run()

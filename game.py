@@ -60,11 +60,11 @@ class Game:
     
     def save_game(self):
         things_to_save = {
-            "game_history": self.game_history,
-            "players": [p.to_json(debug=True) for p in self.players],
-            "game_state": self.to_json(debug=True),
             "winner": self.game_winner,
             "turn_count": self.turn_count,
+            "players": [p.to_json(debug=True) for p in self.players],
+            "game_history": self.game_history,
+            "game_state": self.to_json(debug=True),
         }
         os.makedirs(f'logs/{self.game_identifier}', exist_ok=True)
         with open(f"logs/{self.game_identifier}/result.json", "w") as f:
@@ -610,7 +610,7 @@ class TestPlayer(Player):
     
     def wants_to_negate(self, action_chain_str: str, target_player_name: str, game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         for card in self.hand:
-            if card.get_card_type() == CardType.ACTION_JUST_SAY_NO:
+            if card.get_card_type() == CardType.ACTION_JUST_SAY_NO and random.random() < 0.5:
                 return Action(action_type=ActionType.PLAY_ACTION, source_player=self, card=card, target_player_names=[target_player_name])
         return None
 

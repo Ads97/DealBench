@@ -216,7 +216,7 @@ class LLMHandler():
     def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Dict[str, Any]:
         """Call the LLM with a rendered template."""
         prompt = self._render_template(template_name, **template_kwargs)
-        logger.info(f"===PROMPT=== {template_name} \n{prompt}\n===END PROMPT===")
+        logger.info(f"===PROMPT=== {template_name} {self.model_name} \n{prompt}\n===END PROMPT===")
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
             "Content-Type": "application/json"

@@ -31,6 +31,8 @@ class Tournament:
         self.log_dir = os.path.join("logs", self.tournament_identifier)
         os.makedirs(self.log_dir, exist_ok=True)
         self._lock = trio.Lock()
+        # ``batch_size`` represents the maximum number of games that will be
+        # played concurrently. It defaults to 6 games at once.
         self.batch_size = batch_size
 
     def _clone_player(self, player: Player) -> Player:
@@ -69,11 +71,24 @@ class Tournament:
             for j in range(i + 1, len(self.players))
         ]
 
-        for batch_start in range(0, len(matches), self.batch_size):
-            batch = matches[batch_start : batch_start + self.batch_size]
-            async with trio.open_nursery() as nursery:
-                for a, b in batch:
-                    nursery.start_soon(self._play_match, a, b)
+        # Use workers to ensure that at most ``batch_size`` games are running
+        # simultaneously. When one game finishes, a worker immediately begins
+        # the next game in the queue.
+        send_channel, receive_channel = trio.open_memory_channel[Tuple[Player, Player]](0)
+
+        async def worker():
+            async with receive_channel:
+                async for a, b in receive_channel:
+                    await self._play_match(a, b)
+
+        async with trio.open_nursery() as nursery:
+            # start only as many workers as needed
+            for _ in range(min(self.batch_size, len(matches))):
+                nursery.start_soon(worker)
+
+            async with send_channel:
+                for match in matches:
+                    await send_channel.send(match)
 
         self.save_results()
 

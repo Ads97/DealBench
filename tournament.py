@@ -113,8 +113,8 @@ if __name__ == "__main__":
         # TestPlayer(name="test_player_10"),
         TestPlayer(name="Randy"),
         openai_o3,
-        # claude_4_sonnet,
-        # gemini_2_5_pro,
+        claude_4_sonnet,
+        gemini_2_5_pro,
         openai_o4_mini
     ]
     tournament = Tournament(players)

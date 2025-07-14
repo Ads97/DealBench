@@ -275,7 +275,11 @@ class Game:
             self.add_to_game_history(f"{target_player.name}'s Just Say No cancelled the {reason} request from {source_player.name}.")
             return False
         payment_cards = target_player.provide_payment(reason=reason,amount=amount, game_state_dict=self.to_json(), game_history=self.game_history)
-        valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
+        if payment_cards:
+            valid, reason_msg = self.rules_engine.validate_rent_payment(payment_cards)
+        else:
+            valid=False
+            reason_msg="payment_cards is None"  
         attempts = 0
         while not valid and attempts < 2:
             logger.error(f"Invalid payment: {reason_msg}. Trying again.")

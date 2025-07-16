@@ -7,7 +7,7 @@ from action import Action, ActionType, ActionPropertyInfo
 from rules_engine import RulesEngine
 import json
 from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro
+from llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro, kimi_k2
 import logging 
 import time
 import os 
@@ -631,16 +631,17 @@ def setup_logging(log_file_folder: str):
 # Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":
     players = [
-        # TestPlayer(name="Alice"),
+        # TestPlayer(name="Randy"),
         # TestPlayer(name="Bob"),
         # meta_maverick,
         # gpt_4_1_nano,
         # deepseek_r1,
         # qwen3_235b,
         # claude_4_sonnet,
-        # openai_o4_mini,
-        openai_o3,
+        openai_o4_mini,
+        # openai_o3,
         gemini_2_5_pro
+        # kimi_k2
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
     game = Game(players)

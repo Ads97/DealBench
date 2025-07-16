@@ -28,6 +28,8 @@ class LLMHandler():
             response = json.loads(response.text.strip())
         else:
             response = response.json()
+        if response.get('choices',[])[0].get('error'):
+            raise ValueError(f"{response}")
         text = response['choices'][0]['message']['content']
         if self.model_name.startswith("anthropic"):
             reasoning, sep, text = text.partition("{")
@@ -486,14 +488,15 @@ gpt_4_1_mini = LLMPlayer(model_name="openai/gpt-4.1-mini-2025-04-14")
 claude_4_sonnet = LLMPlayer(model_name="anthropic/claude-4-sonnet-20250522")
 openai_o4_mini = LLMPlayer(model_name="openai/o4-mini")
 openai_o3 = LLMPlayer(model_name="openai/o3")
+kimi_k2 = LLMPlayer(model_name="moonshotai/kimi-k2:free")
 
 if __name__ == "__main__":
 
     # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
     # handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
-    # handler = LLMHandler(model_name="openai/o4-mini")
+    handler = LLMHandler(model_name="openai/o4-mini")
     # handler = LLMHandler(model_name="openai/o3")
-    handler = LLMHandler(model_name="anthropic/claude-4-sonnet-20250522")
+    # handler = LLMHandler(model_name="moonshotai/kimi-k2:free")
     # handler = LLMHandler(model_name="google/gemini-2.5-pro")
     # handler = LLMHandler(model_name="deepseek/deepseek-r1-0528:free")
     handler.call_llm("test_action.j2", response_format="action")

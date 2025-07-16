@@ -43,8 +43,8 @@ class Tournament:
     async def _play_match(self, player_a: Player, player_b: Player):
         fresh_players = [self._clone_player(player_a), self._clone_player(player_b)]
         print(f"starting game between {' and '.join([player.name for player in fresh_players])}")
+        # time.sleep(random.randint(1, 5))
         game = Game(fresh_players)
-        time.sleep(random.uniform(0, 1))
         await trio.to_thread.run_sync(game.run_game)
         winner = game.game_winner
         if winner is None:
@@ -122,20 +122,20 @@ def run_tournaments(players: List[Player], num_runs: int = 1, num_concurrent_gam
 
 if __name__ == "__main__":
     players = [
-        TestPlayer(name="test_player_1"),
-        TestPlayer(name="test_player_2"),
-        TestPlayer(name="test_player_3"),
-        TestPlayer(name="test_player_4"),
-        TestPlayer(name="test_player_5"),
-        TestPlayer(name="test_player_6"),
-        TestPlayer(name="test_player_7"),
-        TestPlayer(name="test_player_8"),
-        TestPlayer(name="test_player_9"),
-        TestPlayer(name="test_player_10"),
+        # TestPlayer(name="test_player_1"),
+        # TestPlayer(name="test_player_2"),
+        # TestPlayer(name="test_player_3"),
+        # TestPlayer(name="test_player_4"),
+        # TestPlayer(name="test_player_5"),
+        # TestPlayer(name="test_player_6"),
+        # TestPlayer(name="test_player_7"),
+        # TestPlayer(name="test_player_8"),
+        # TestPlayer(name="test_player_9"),
+        # TestPlayer(name="test_player_10"),
         TestPlayer(name="Randy"),
         # openai_o3,
-        # claude_4_sonnet,
-        # gemini_2_5_pro,
+        claude_4_sonnet,
+        gemini_2_5_pro,
         # openai_o4_mini
     ]
 

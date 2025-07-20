@@ -27,8 +27,15 @@ def game_data():
     result = "logs/2025-07-09_20-46-24_anthropic_claude-4-sonnet-20250522_openai_o3_game/result.json"
     with open(result, "r") as f:
         data = json.load(f)
-    
-    return jsonify(data['game_state'])
+
+    action = ""
+    if isinstance(data.get('game_history'), list) and data['game_history']:
+        action = data['game_history'][-1]
+
+    return jsonify({
+        "action": action,
+        "game_state": data.get('game_state', {})
+    })
 
 
 if __name__ == "__main__":

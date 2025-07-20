@@ -17,7 +17,7 @@ Your current game state:
 {%- endfor -%}
 {%- else -%}
   None.
-{%- endif -%}
+{%- endif %}
 - Bank (Total value: {{ perspective_player.get_bank_value() }}):
 {%- if perspective_player.bank -%}
 {%- for card in perspective_player.bank -%}
@@ -48,7 +48,7 @@ Your current game state:
 
 Other players:
 {%- for player in game_state.players -%}
-  {%- if player.name != perspective_player.name -%}
+  {%- if player.name != perspective_player.name %}
 - {{ player.name }}:
   - Bank (Total value: {{ player.bank_value }}):
     {%- if player.banked_cards -%}

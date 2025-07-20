@@ -637,10 +637,10 @@ if __name__ == "__main__":
         # gpt_4_1_nano,
         # deepseek_r1,
         # qwen3_235b,
-        # claude_4_sonnet,
+        claude_4_sonnet,
         openai_o4_mini,
         # openai_o3,
-        gemini_2_5_pro
+        # gemini_2_5_pro
         # kimi_k2
     ]
     assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"

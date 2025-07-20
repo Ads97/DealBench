@@ -1,0 +1,76 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.game-board {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.player-section {
+    border: 2px solid #6c757d;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    width: 45%;
+}
+
+.player-name {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #343a40;
+}
+
+.card-area {
+    margin-bottom: 15px;
+}
+
+.card-area h3 {
+    margin-bottom: 5px;
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.card {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-money {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.card-property {
+    background-color: #cce5ff;
+    border-color: #b8daff;
+}
+
+.card-action {
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+.property-set {
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}

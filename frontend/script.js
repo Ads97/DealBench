@@ -16,8 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('/game_data')
         .then(response => response.json())
         .then(data => {
+            const gameState = data.game_state;
+            const actionDiv = document.getElementById('action-display');
+            if (actionDiv && data.action) {
+                actionDiv.textContent = data.action;
+            }
+
             const gameBoard = document.getElementById('game-board');
-            data.players.forEach(player => {
+            gameState.players.forEach(player => {
                 const playerSection = document.createElement('div');
                 playerSection.className = 'player-section';
 

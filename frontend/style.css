@@ -58,7 +58,7 @@ body {
 }
 
 .card-property {
-    background-color: #cce5ff;
+    /* Background will be set dynamically based on the property's color */
     border-color: #b8daff;
 }
 

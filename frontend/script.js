@@ -1,3 +1,17 @@
+const PROPERTY_COLORS = {
+    BROWN: '#A52A2A',
+    LIGHT_BLUE: '#ADD8E6',
+    PINK: '#FFC0CB',
+    ORANGE: '#FFA500',
+    RED: '#FF0000',
+    YELLOW: '#FFFF00',
+    GREEN: '#008000',
+    DARK_BLUE: '#00008B',
+    RAILROAD: '#AAAAAA',
+    UTILITY: '#CCCCCC'
+};
+const WILD_PROPERTY_COLOR = '#efefef';
+
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/game_data')
         .then(response => response.json())
@@ -31,11 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const propSet = player.property_sets[color];
                     const propSetDiv = document.createElement('div');
                     propSetDiv.className = 'property-set';
-                    propSetDiv.style.borderColor = color.toLowerCase();
+                    if (PROPERTY_COLORS[color]) {
+                        propSetDiv.style.borderColor = PROPERTY_COLORS[color];
+                    }
 
                     const propSetTitle = document.createElement('h4');
                     propSetTitle.textContent = `${color} Set`;
-                    propSetTitle.style.color = color.toLowerCase();
+                    if (PROPERTY_COLORS[color]) {
+                        propSetTitle.style.color = PROPERTY_COLORS[color];
+                    }
                     propSetDiv.appendChild(propSetTitle);
 
                     const propCardContainer = document.createElement('div');
@@ -74,6 +92,17 @@ function createCardArea(title, cards, cardClassFunc) {
 function createCard(card, cardClassFunc) {
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card ' + cardClassFunc(card);
+
+    if (card.type.includes('PROPERTY_WILD')) {
+        cardDiv.style.backgroundColor = WILD_PROPERTY_COLOR;
+        cardDiv.style.borderColor = '#ccc';
+    } else if (card.type.includes('PROPERTY')) {
+        const colorKey = card.set_color || card.current_color;
+        if (colorKey && PROPERTY_COLORS[colorKey]) {
+            cardDiv.style.backgroundColor = PROPERTY_COLORS[colorKey];
+            cardDiv.style.borderColor = PROPERTY_COLORS[colorKey];
+        }
+    }
 
     const cardName = document.createElement('div');
     cardName.style.fontWeight = 'bold';

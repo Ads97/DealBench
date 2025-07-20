@@ -4,9 +4,9 @@ const PROPERTY_COLORS = {
     PINK: '#FFC0CB',
     ORANGE: '#FFA500',
     RED: '#FF0000',
-    YELLOW: '#FFFF00',
+    YELLOW: '#B8860B',
     GREEN: '#008000',
-    DARK_BLUE: '#00008B',
+    DARK_BLUE: '#1E90FF',
     RAILROAD: '#AAAAAA',
     UTILITY: '#CCCCCC'
 };

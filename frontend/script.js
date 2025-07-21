@@ -12,7 +12,7 @@ const PROPERTY_COLORS = {
 };
 const WILD_PROPERTY_COLOR = '#efefef';
 
-document.addEventListener('DOMContentLoaded', () => {
+function loadGameData() {
     fetch('/game_data')
         .then(response => response.json())
         .then(data => {
@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
             gameState.players.forEach(player => {
                 const playerSection = document.createElement('div');
                 playerSection.className = 'player-section';
@@ -75,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 gameBoard.appendChild(playerSection);
             });
         });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadGameData();
+    setInterval(loadGameData, 2000);
 });
 
 function createCardArea(title, cards, cardClassFunc) {

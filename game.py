@@ -58,7 +58,12 @@ class Game:
             logger.info(message)
         self.game_history.append(message)
     
-    def save_game(self):
+    def save_game(self, file_name: str = "result.json"):
+        """Save the current game state.
+
+        Args:
+            file_name: Name of the file within the game log directory.
+        """
         things_to_save = {
             "winner": self.game_winner,
             "turn_count": self.turn_count,
@@ -66,8 +71,8 @@ class Game:
             "game_history": self.game_history,
             "game_state": self.to_json(debug=True),
         }
-        os.makedirs(f'logs/{self.game_identifier}', exist_ok=True)
-        with open(f"logs/{self.game_identifier}/result.json", "w") as f:
+        os.makedirs(f"logs/{self.game_identifier}", exist_ok=True)
+        with open(f"logs/{self.game_identifier}/{file_name}", "w") as f:
             json.dump(things_to_save, f, indent=4)
     
     def run_game(self):
@@ -129,8 +134,10 @@ class Game:
                 self.add_to_game_history(f"Skipping {player.name}'s action due to invalid actions: {error_reason}")
                 break
 
-            if action.action_type == ActionType.PASS: # Player chose to end turn
+            if action.action_type == ActionType.PASS:  # Player chose to end turn
                 self.add_to_game_history(f"{player.name} has chosen to end their action phase.")
+                # Save when a player passes
+                self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json")
                 break
 
             # now execute action
@@ -141,6 +148,10 @@ class Game:
                 logger.info(f"Action successful: {action}")
             else:
                 logger.info(f"Could not execute action: {action}")
+
+            # Save state after each valid action
+            self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json")
+
             has_won = self.rules_engine.check_win_condition(player)
             if has_won:
                     self.game_winner = player

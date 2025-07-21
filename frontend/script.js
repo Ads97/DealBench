@@ -12,6 +12,34 @@ const PROPERTY_COLORS = {
 };
 const WILD_PROPERTY_COLOR = '#efefef';
 
+let winnerAnnounced = false;
+
+function announceWinner(winner) {
+    if (winnerAnnounced) return;
+    winnerAnnounced = true;
+    const modal = document.getElementById('winner-modal');
+    const message = document.getElementById('winner-message');
+    if (message) {
+        message.textContent = `${winner} wins!`;
+    }
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        }, { once: true });
+    }
+    if (window.confetti) {
+        const end = Date.now() + 3000;
+        (function frame() {
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+            if (Date.now() < end) {
+                requestAnimationFrame(frame);
+            }
+        })();
+    }
+}
+
 function loadGameData() {
     fetch('/game_data')
         .then(response => response.json())
@@ -75,6 +103,10 @@ function loadGameData() {
 
                 gameBoard.appendChild(playerSection);
             });
+
+            if (data.winner) {
+                announceWinner(data.winner);
+            }
         });
 }
 

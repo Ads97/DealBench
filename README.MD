@@ -1,64 +1,68 @@
-# LLM Deal Arena
-LLM Deal Arena is a project that pits different Large Language Models (LLMs) against each other in a competitive Monopoly Deal game simulation. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. The complete set of rules can be found [here](https://monopolydealrules.com/). The game is played with all the action, money and property cards. A vanilla html/css/javascript frontend displays recent match replays.
+# LLM Deal Bench
+LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a competitive Monopoly Deal game simulation. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. The game is played with all the rules and cards in a standard monopoly deal game. (The complete set of rules can be found [here](https://monopolydealrules.com/).) A vanilla html/css/javascript frontend displays recent match replays.
 
-## Project Overview
-Backend: Game Simulation (game.py & tournament.py)
-Game Mechanics:
+## Project Overview 
+Backend: Game Simulation (agentdeal/game.py & agentdeal/tournament.py)
 
-Game State Representation: Each player has a hand, a bank for money/action cards, property sets and a personal discard pile. A central deck manages the remaining and discarded cards.
-Action Validation: A rules engine checks every attempted move—playing a card, banking money, adding properties, moving cards or paying debts—to ensure it follows Monopoly Deal rules.
-Win Condition: After each turn the engine verifies whether a player has three complete property sets of different colours to declare the winner.
-LLM-Powered Player Control:
+An individual game can be run using game.py. The game should support 2-5 players (as in standard monopoly deal), but has been extensively tested with 2 players. Game mechanics are as follows:
 
-LLMPlayer Class: For each player controlled by an LLM, the engine constructs a detailed prompt describing the game state (hands, banks, properties, deck counts) and the previous turn's reasoning. The LLM returns a recommended action to execute.
-Fallback Mechanism: If the response from the LLM is unclear, the player falls back to selecting a random valid move.
-Tournament Simulation (tournament.py):
+**Game Mechanics:**
 
-Runs multiple matchups in parallel to evaluate LLM strategies.
-Stores logs for each match and aggregates win/loss results.
-Frontend: Visualization (frontend)
-Leaderboard & Latest Matches:
+*Game State Representation:* Each player has a hand, a bank for money/action cards and property sets. A central deck manages the remaining cards.
 
-Data Fetching: The frontend can fetch aggregated statistics such as Elo ratings and recent results from a simple Flask API.
-Game Replays: It displays step-by-step replays of the latest games using DOM elements to render each player's cards.
-User Interface:
+*Action Validation*: A rules engine checks every attempted action by a player - playing cards, banking money, adding/moving properties, playing actions or discarding cards — to ensure it follows game rules.
+Win Condition: After each turn the engine verifies whether a player has three complete property sets of different colours to declare the winner. If a player makes 3 invalid actions in a turn, their turn is skipped.
 
-A basic HTML/JS interface shows the board state and pops up the winner when a game finishes.
-Running Simulations
-Run a Single Game: To run a one-off game between two specific models:
+**LLM-Powered Player Control:**
 
-python3 game.py --models gpt-4o-mini-2024-07-18 claude-3-haiku-20240307
-You can also customize game parameters like number of players or the deck configuration.
+Player Class: Each player (random bot or LLM) supports 4 types of player moves - get action, provide payment, discard cards, and just say no. For LLM players, each of these moves maps to a prompt in `agentdeal/prompts/`. 
 
-Run Tournaments (Target Model vs. Others): To test a specific model against a pool of opponents, use tournament.py.
+**Tournament Simulation (agentdeal/tournament.py):**
 
-python3 tournament.py
-This script spins up multiple games concurrently and saves the logs in the logs/ directory.
+The tournament is a round-robin tournament that pits each player against every other player. Matches are run in parallel to speed up the tournament. Logs are also stored for each match, as well as aggregate win/loss results.
 
-Quick Start
+**Frontend: Visualization (frontend)**
+1. Data Fetching: The frontend fetches game state and actions played from a simple Flask API.
+2. Game Replays: It displays step-by-step replays of the selected game using DOM elements to render each player's cards.
+
+**Running Simulations**
+
+*Run a Single Game:* To run a one-off game between two specific models:
+
+`python3 agentdeal/game.py --models openai/o3 anthropic/claude-4-sonnet`
+(Use the exact openrouter names for models)
+
+*Deck Configuration:*To change the number/type of cards used, modify the `agentdeal/deck_config.py` file.
+
+*Run Tournaments*: To run a round robin tournament between multiple models:
+`python3 agentdeal/tournament.py --models openai/o3 anthropic/claude-4-sonnet`
+(Use the exact openrouter names for models)
+
+Use model name `random` to use a random bot (no LLM calls). 
+
+## Quick Start
 Setup the Environment:
 
-Install project dependencies with `pip install -r requirements.txt`.
-Ensure that your environment variables (e.g., API keys for your LLM provider) are configured in a .env file.
-Start a Game or Tournament:
+1. Install project dependencies with `pip install -r requirements.txt`.
+2. Configure openrouter and openai api keys in a .env file (check out .env.example for the format)
+3. Start a Game or Tournament:
+    - Use `python3 agentdeal/game.py --models openai/o3 anthropic/claude-4-sonnet` for a single match or `python3 agentdeal/tournament.py --models openai/o3 anthropic/claude-4-sonnet` for a round robin tournament between multiple players. Game logs are written to `logs/`.
 
-Use `python3 game.py` for a single match or `python3 tournament.py` for repeated matches between multiple players. Game logs are written to `logs/`.
 Launch the Frontend Application:
-
-Navigate to the `frontend` directory.
-Open `index.html` in a browser or run `python3 frontend_server.py` to serve replays via Flask.
+1. run `python3 frontend_server.py --logs logs/<game-name>`. Do this after running a game or tournament.
+2. Open `localhost://5000` in a browser
 
 Architecture Summary
-Backend (Python): Contains the core game logic (game.py) for simulating Monopoly Deal. It maintains game state, validates actions, saves logs and can run tournaments to evaluate multiple models.
+Backend (agentdeal/) (Python): Contains the core game logic (game.py) for simulating Monopoly Deal. It maintains game state, validates actions, saves logs and can run tournaments to evaluate multiple models.
 
-Frontend (HTML/JS): Provides a lightweight dashboard for viewing game state and replays. It can fetch data from `frontend_server.py` and display it in the browser.
+Frontend (frontend/) (HTML/JS): Provides a lightweight dashboard for viewing game state and replays. It can fetch data from `frontend_server.py` and display it in the browser.
 
-Made with ❤️ by Greg Kamradt
+Made with ❤️ by Advaith Sridhar. Non commercial use only.
 
-@misc{llm_deal_arena_2025,
-  author       = {Greg Kamradt},
-  title        = {LLM Deal Arena: Competitive Monopoly Deal with LLMs},
+@misc{llm_deal_bench_2025,
+  author       = {Advaith Sridhar},
+  title        = {LLM Deal Bench: Competitive Monopoly Deal with LLMs},
   year         = {2025},
-  howpublished = {\url{https://github.com/gkamradt/AgentDeal}},
+  howpublished = {\url{https://github.com/advaith/DealBench}},
   note         = {Accessed on: Month Day, Year}
 }

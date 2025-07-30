@@ -2,13 +2,13 @@ import random
 from typing import List, Optional, Dict, Any
 
 # Import necessary classes and enums
-from agentdeal.card import (
+from dealbench.card import (
     Card, CardType, PropertyColor,
     MoneyCard, PropertyCard, WildPropertyCard, RentCard, BuildingCard, HouseCard, HotelCard,
     DoubleTheRentCard, JustSayNoCard, ActionCard, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard,
     SlyDealCard, ForcedDealCard, DealBreakerCard
 )
-from agentdeal.deck_config import DECK_CONFIGURATION, RENT_INFO  # Import the configuration
+from dealbench.deck_config import DECK_CONFIGURATION, RENT_INFO  # Import the configuration
 import logging
 logger = logging.getLogger(__name__)
 

@@ -1,13 +1,13 @@
 import random
 from typing import List, Optional, Dict, Any
-from agentdeal.deck import Deck
-from agentdeal.player import Player
-from agentdeal.card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
-from agentdeal.action import Action, ActionType, ActionPropertyInfo
-from agentdeal.rules_engine import RulesEngine
+from dealbench.deck import Deck
+from dealbench.player import Player
+from dealbench.card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
+from dealbench.action import Action, ActionType, ActionPropertyInfo
+from dealbench.rules_engine import RulesEngine
 import json
-from agentdeal.deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from agentdeal.llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro, kimi_k2
+from dealbench.deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
+from dealbench.llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro, kimi_k2
 import logging 
 import time
 import os 

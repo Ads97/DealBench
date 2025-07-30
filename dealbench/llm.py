@@ -5,10 +5,10 @@ import requests
 from typing import List, Dict, Any, Optional, Union
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
-from agentdeal.player import Player
-from agentdeal.action import Action, ActionType, ActionPropertyInfo
-from agentdeal.card import Card, PropertyColor, CardType
-from agentdeal.deck_config import ACTIONS_PER_TURN
+from dealbench.player import Player
+from dealbench.action import Action, ActionType, ActionPropertyInfo
+from dealbench.card import Card, PropertyColor, CardType
+from dealbench.deck_config import ACTIONS_PER_TURN
 import sys 
 from requests.exceptions import RequestException
 import time 

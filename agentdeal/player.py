@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Optional
 
-from card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
-from action import ActionPropertyInfo, Action
+from agentdeal.card import Card, MoneyCard, PropertySet, PropertyColor, PropertyCard, WildPropertyCard, CardType
+from agentdeal.action import ActionPropertyInfo, Action
 import logging
 logger = logging.getLogger(__name__)
 

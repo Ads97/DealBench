@@ -4,9 +4,9 @@ import time
 import trio
 from typing import List, Dict, Any, Tuple
 import random 
-from game import Game, TestPlayer, setup_logging
-from player import Player
-from llm import claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro
+from agentdeal.game import Game, TestPlayer, setup_logging
+from agentdeal.player import Player
+from agentdeal.llm import claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro
 
 class Tournament:
     """Run a simple 1v1 round robin tournament."""

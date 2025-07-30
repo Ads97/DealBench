@@ -1,13 +1,13 @@
 import random
 from typing import List, Optional, Dict, Any
-from deck import Deck
-from player import Player
-from card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
-from action import Action, ActionType, ActionPropertyInfo
-from rules_engine import RulesEngine
+from agentdeal.deck import Deck
+from agentdeal.player import Player
+from agentdeal.card import BuildingCard, Card, MoneyCard, PropertyCard, WildPropertyCard, RentCard, CardType, PropertyColor, PassGoCard, ItsMyBirthdayCard, DebtCollectorCard, DealBreakerCard, SlyDealCard, ForcedDealCard
+from agentdeal.action import Action, ActionType, ActionPropertyInfo
+from agentdeal.rules_engine import RulesEngine
 import json
-from deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
-from llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro, kimi_k2
+from agentdeal.deck_config import INITIAL_HAND_SIZE, MAX_HAND_SIZE, ACTIONS_PER_TURN, DRAWS_PER_TURN, PASS_GO_DRAW_COUNT, BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
+from agentdeal.llm import qwen3_235b, deepseek_r1, meta_maverick, gpt_4_1_nano, claude_4_sonnet, openai_o4_mini, openai_o3, gemini_2_5_pro, kimi_k2
 import logging 
 import time
 import os 

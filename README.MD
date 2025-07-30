@@ -1,5 +1,5 @@
-# Deal Bench - An AI Research Benchmark inspired by Monopoly Deal*
-LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a simulated game inspired by Monopoly Deal*. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. A vanilla html/css/javascript frontend displays recent match replays.
+# Deal Bench - An AI Research Benchmark inspired by Monopoly Deal\*
+LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a simulated game inspired by Monopoly Deal\*. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. A vanilla html/css/javascript frontend displays recent match replays.
 
 ## Project Overview 
 Backend: Game Simulation (agentdeal/game.py & agentdeal/tournament.py)
@@ -58,11 +58,11 @@ Launch the Frontend Application:
 ---
 
 ## Architecture Summary
-Backend (agentdeal/) (Python): Contains the core game logic (game.py) for simulating a game based on the rules of Monopoly Deal*. It maintains game state, validates actions, saves logs and can run tournaments to evaluate multiple models.
+Backend (agentdeal/) (Python): Contains the core game logic (game.py) for simulating a game based on the rules of Monopoly Deal\*. It maintains game state, validates actions, saves logs and can run tournaments to evaluate multiple models.
 
 Frontend (frontend/) (HTML/JS): Provides a lightweight dashboard for viewing game state and replays. It can fetch data from `frontend_server.py` and display it in the browser.
 
-*This project implements a simulation based on the publicly known rules of Monopoly Deal. Monopoly Deal and Monopoly are registered trademarks of Hasbro, Inc. This project is not affiliated with, endorsed by, or associated with Hasbro in any way.
+\*This project implements a simulation based on the publicly known rules of Monopoly Deal. Monopoly Deal and Monopoly are registered trademarks of Hasbro, Inc. This project is not affiliated with, endorsed by, or associated with Hasbro in any way.
 
 Made with ❤️ by [Advaith Sridhar](https://advaithsridhar.blog/). Not affiliated with Hasbro. Non commercial use only.
 

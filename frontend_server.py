@@ -24,7 +24,12 @@ latest_data = {}
 
 
 def _get_json_files():
-    """Return list of game data files sorted by turn then action number."""
+    """Return list of game data files sorted by turn then action number.
+
+    The list includes all ``turn-*_actions-*.json`` files followed by the
+    ``result.json`` file (if present) so that the frontend receives the final
+    game summary after all turn data has been served.
+    """
     pattern = os.path.join(LOG_DIR, "turn-*_actions-*.json")
     files = glob.glob(pattern)
 
@@ -35,7 +40,14 @@ def _get_json_files():
             return int(m.group(1)), int(m.group(2))
         return float("inf"), float("inf")
 
-    return sorted(files, key=sort_key)
+    files = sorted(files, key=sort_key)
+
+    # Append the result.json file at the end if it exists.
+    result_path = os.path.join(LOG_DIR, "result.json")
+    if os.path.exists(result_path):
+        files.append(result_path)
+
+    return files
 
 
 def update_data_loop():
@@ -73,7 +85,11 @@ def game_data():
     if isinstance(data.get("game_history"), list) and data["game_history"]:
         action = data["game_history"][-1]
 
-    return jsonify({"action": action, "game_state": data.get("game_state", {})})
+    return jsonify({
+        "action": action,
+        "game_state": data.get("game_state", {}),
+        "winner": data.get("winner"),
+    })
 
 
 if __name__ == "__main__":

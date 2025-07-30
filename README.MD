@@ -57,7 +57,7 @@ Backend (agentdeal/) (Python): Contains the core game logic (game.py) for simula
 
 Frontend (frontend/) (HTML/JS): Provides a lightweight dashboard for viewing game state and replays. It can fetch data from `frontend_server.py` and display it in the browser.
 
-Made with ❤️ by Advaith Sridhar. Non commercial use only.
+Made with ❤️ by Advaith Sridhar. Not affiliated with Hasbro. Non commercial use only.
 
 @misc{llm_deal_bench_2025,
   author       = {Advaith Sridhar},

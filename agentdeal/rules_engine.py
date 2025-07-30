@@ -1,8 +1,8 @@
 from typing import Any, List, Optional, Tuple
-from action import Action, ActionType, ActionPropertyInfo
-from card import CardType, PropertyColor, PropertyCard, RentCard, BuildingCard, ActionCard, Card, WildPropertyCard # etc.
-from player import Player
-from deck_config import ACTIONS_PER_TURN
+from agentdeal.action import Action, ActionType, ActionPropertyInfo
+from agentdeal.card import CardType, PropertyColor, PropertyCard, RentCard, BuildingCard, ActionCard, Card, WildPropertyCard  # etc.
+from agentdeal.player import Player
+from agentdeal.deck_config import ACTIONS_PER_TURN
 
 class RulesEngine:
     @staticmethod

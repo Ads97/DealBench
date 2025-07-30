@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Optional
-from card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor
+from agentdeal.card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor
 from dataclasses import dataclass
 from enum import Enum, auto
 

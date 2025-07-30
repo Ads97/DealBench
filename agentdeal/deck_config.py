@@ -2,7 +2,7 @@
 
 # Import necessary enums from the card module
 # Assume card.py is in the same directory or accessible via PYTHONPATH
-from card import CardType, PropertyColor
+from agentdeal.card import CardType, PropertyColor
 import sys 
 import logging
 logger = logging.getLogger(__name__)

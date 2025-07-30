@@ -5,10 +5,10 @@ import requests
 from typing import List, Dict, Any, Optional, Union
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
-from player import Player
-from action import Action, ActionType, ActionPropertyInfo
-from card import Card, PropertyColor, CardType
-from deck_config import ACTIONS_PER_TURN
+from agentdeal.player import Player
+from agentdeal.action import Action, ActionType, ActionPropertyInfo
+from agentdeal.card import Card, PropertyColor, CardType
+from agentdeal.deck_config import ACTIONS_PER_TURN
 import sys 
 from requests.exceptions import RequestException
 import time 
@@ -21,7 +21,8 @@ class LLMHandler():
     def __init__(self, model_name: str):
         self.model_name = model_name
         self.url = "https://openrouter.ai/api/v1/chat/completions"
-        self.template_env = Environment(loader=FileSystemLoader('prompts'))
+        prompts_path = os.path.join(os.path.dirname(__file__), 'prompts')
+        self.template_env = Environment(loader=FileSystemLoader(prompts_path))
 
     def _extract_json(self, response):
         if self.model_name.startswith("anthropic"):

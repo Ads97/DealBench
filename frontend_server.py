@@ -17,7 +17,7 @@ app = Flask(__name__, static_folder="frontend", static_url_path="")
 
 # Directory containing sequential game state JSON files.
 # Can be overridden with the LOG_DIR environment variable.
-LOG_DIR = os.environ.get("LOG_DIR", "logs/2025-07-20_18-21-20_Randy_Bob_game")
+LOG_DIR = os.environ.get("LOG_DIR", "logs/2025-07-24_06-41-55_openai_o3_google_gemini-2.5-pro_game")
 
 # Shared dictionary that always holds the latest loaded data.
 latest_data = {}

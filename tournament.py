@@ -62,6 +62,13 @@ class Tournament:
             )
             print(f"Game over! Players: {player_a.name}, {player_b.name}.\nWinner: {winner}\nGame Identifier: {game.game_identifier}")
 
+    @staticmethod
+    def check_players(a,b,names):
+        for name in names:
+            if (name in a.name or name in b.name):
+                return True
+        return False
+
     async def _run_async(self):
         setup_logging(self.tournament_identifier)
         matches: List[Tuple[Player, Player]] = [
@@ -79,6 +86,8 @@ class Tournament:
 
         async with trio.open_nursery() as nursery:
             for a, b in matches:
+                if not self.check_players(a,b, ["openai", "Randy"]):
+                    continue
                 nursery.start_soon(run_match, a, b)
 
         self.save_results()
@@ -133,10 +142,10 @@ if __name__ == "__main__":
         # TestPlayer(name="test_player_9"),
         # TestPlayer(name="test_player_10"),
         TestPlayer(name="Randy"),
-        # openai_o3,
+        openai_o3,
         claude_4_sonnet,
         gemini_2_5_pro,
-        # openai_o4_mini
+        openai_o4_mini
     ]
 
     run_tournaments(players)

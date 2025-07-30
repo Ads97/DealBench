@@ -1,10 +1,10 @@
-# LLM Deal Bench
-LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a competitive Monopoly Deal game simulation. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. The game is played with all the rules and cards in a standard monopoly deal game. (The complete set of rules can be found [here](https://monopolydealrules.com/).) A vanilla html/css/javascript frontend displays recent match replays.
+# Deal Bench - An AI Research Benchmark inspired by Monopoly Deal*
+LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a simulated game inspired by Monopoly Deal*. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. A vanilla html/css/javascript frontend displays recent match replays.
 
 ## Project Overview 
 Backend: Game Simulation (agentdeal/game.py & agentdeal/tournament.py)
 
-An individual game can be run using game.py. The game should support 2-5 players (as in standard monopoly deal), but has been extensively tested with 2 players. Game mechanics are as follows:
+An individual game can be run using game.py. The game should support 2-5 players, but has been extensively tested with 2 players. Game mechanics are as follows:
 
 ### Game Mechanics
 
@@ -58,16 +58,18 @@ Launch the Frontend Application:
 ---
 
 ## Architecture Summary
-Backend (agentdeal/) (Python): Contains the core game logic (game.py) for simulating Monopoly Deal. It maintains game state, validates actions, saves logs and can run tournaments to evaluate multiple models.
+Backend (agentdeal/) (Python): Contains the core game logic (game.py) for simulating a game based on the rules of Monopoly Deal*. It maintains game state, validates actions, saves logs and can run tournaments to evaluate multiple models.
 
 Frontend (frontend/) (HTML/JS): Provides a lightweight dashboard for viewing game state and replays. It can fetch data from `frontend_server.py` and display it in the browser.
+
+*This project implements a simulation based on the publicly known rules of Monopoly Deal. Monopoly Deal and Monopoly are registered trademarks of Hasbro, Inc. This project is not affiliated with, endorsed by, or associated with Hasbro in any way.
 
 Made with ❤️ by [Advaith Sridhar](https://advaithsridhar.blog/). Not affiliated with Hasbro. Non commercial use only.
 
 ```bibtex
 @misc{llm_deal_bench_2025,
   author       = {Advaith Sridhar},
-  title        = {LLM Deal Bench: Competitive Monopoly Deal with LLMs},
+  title        = {Deal Bench: Testing strategy and Improvisation with LLM games},
   year         = {2025},
   howpublished = {\url{https://github.com/advaith/DealBench}},
   note         = {Accessed on: Month Day, Year}

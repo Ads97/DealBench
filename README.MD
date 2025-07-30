@@ -49,6 +49,7 @@ Setup the Environment:
 2. Configure openrouter and openai api keys in a .env file (check out .env.example for the format)
 3. Start a Game or Tournament:
     - Use `python3 agentdeal/game.py --models openai/o3 anthropic/claude-4-sonnet` for a single match or `python3 agentdeal/tournament.py --models openai/o3 anthropic/claude-4-sonnet` for a round robin tournament between multiple players. Game logs are written to `logs/`.
+4. View Elo rankings: Navigate to `notebooks/elo.ipynb` and run all cells to view elo rankings. 
 
 Launch the Frontend Application:
 1. run `python3 frontend_server.py --logs logs/<game-name>`. Do this after running a game or tournament.

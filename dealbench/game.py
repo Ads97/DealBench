@@ -639,22 +639,27 @@ def setup_logging(log_file_folder: str):
         format="%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s"
     ) 
 
-# Example Usage (Conceptual - requires other classes and deck_utils)
 if __name__ == "__main__":
-    players = [
-        # TestPlayer(name="Randy"),
-        # TestPlayer(name="Bob"),
-        # meta_maverick,
-        # gpt_4_1_nano,
-        # deepseek_r1,
-        # qwen3_235b,
-        claude_4_sonnet,
-        openai_o4_mini,
-        # openai_o3,
-        # gemini_2_5_pro
-        # kimi_k2
-    ]
-    assert len(players) == len(set([player.name for player in players])), "Player names should be unique!"
+    import argparse
+    from dealbench.llm import LLMPlayer
+
+    parser = argparse.ArgumentParser(description="Run a single DealBench game")
+    parser.add_argument(
+        "--model",
+        nargs="+",
+        dest="models",
+        required=True,
+        help="Space separated list of model names. Use 'random' for a TestPlayer.",
+    )
+    args = parser.parse_args()
+
+    players = []
+    for idx, model in enumerate(args.models, start=1):
+        if model.lower() == "random":
+            players.append(TestPlayer(name=f"random_{idx}"))
+        else:
+            players.append(LLMPlayer(model_name=model))
+
     game = Game(players)
     setup_logging(game.game_identifier)
     game.run_game()

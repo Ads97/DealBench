@@ -130,22 +130,25 @@ def run_tournaments(players: List[Player], num_runs: int = 1, num_concurrent_gam
 
 
 if __name__ == "__main__":
-    players = [
-        # TestPlayer(name="test_player_1"),
-        # TestPlayer(name="test_player_2"),
-        # TestPlayer(name="test_player_3"),
-        # TestPlayer(name="test_player_4"),
-        # TestPlayer(name="test_player_5"),
-        # TestPlayer(name="test_player_6"),
-        # TestPlayer(name="test_player_7"),
-        # TestPlayer(name="test_player_8"),
-        # TestPlayer(name="test_player_9"),
-        # TestPlayer(name="test_player_10"),
-        TestPlayer(name="Randy"),
-        openai_o3,
-        claude_4_sonnet,
-        gemini_2_5_pro,
-        openai_o4_mini
-    ]
+    import argparse
+    from dealbench.llm import LLMPlayer
 
-    run_tournaments(players)
+    parser = argparse.ArgumentParser(description="Run a DealBench tournament")
+    parser.add_argument(
+        "--model",
+        nargs="+",
+        dest="models",
+        required=True,
+        help="Space separated list of model names. Use 'random' for a TestPlayer.",
+    )
+    parser.add_argument("--concurrency", type=int, default=6, help="Number of concurrent games")
+    args = parser.parse_args()
+
+    players = []
+    for idx, model in enumerate(args.models, start=1):
+        if model.lower() == "random":
+            players.append(TestPlayer(name=f"random_{idx}"))
+        else:
+            players.append(LLMPlayer(model_name=model))
+
+    run_tournaments(players, num_concurrent_games=args.concurrency)

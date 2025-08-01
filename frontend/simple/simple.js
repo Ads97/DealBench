@@ -46,7 +46,7 @@ function renderGame(gameState) {
 
     const title = document.createElement('h2');
     if (player.name === gameState.current_player_name) {
-      title.textContent = `[${player.name}'s Turn]`;
+      title.textContent = `${player.name}'s Turn`;
     } else {
       title.textContent = player.name;
     }
@@ -68,9 +68,11 @@ function renderGame(gameState) {
     propLine.textContent = `Properties 🏠: ${propSets}`;
     section.appendChild(propLine);
 
-    const actionsLine = document.createElement('div');
-    actionsLine.textContent = `Actions played this turn: ${actionsPlayed}`;
-    section.appendChild(actionsLine);
+    if (player.name === gameState.current_player_name) {
+      const actionsLine = document.createElement('div');
+      actionsLine.textContent = `Actions played this turn: ${actionsPlayed}`;
+      section.appendChild(actionsLine);
+    }
 
     const handLine = document.createElement('div');
     handLine.className = 'player-info';

@@ -119,7 +119,7 @@ function announceWinner(winner) {
 }
 
 function typeText(el, text, cb) {
-  const speed = 40; // ms per character
+  const speed = 5; // ms per character
   let idx = 0;
   function type() {
     if (idx < text.length) {
@@ -145,14 +145,14 @@ async function loadGameData() {
 
     const playerName = data.game_state?.current_player_name;
     const reasoning = data.reasoning || '';
-    const action = data.action || '';
+    const action = "Action: " + data.action || '';
     if (playerName) {
       const section = document.getElementById(playerId(playerName));
       if (section) {
         const reasoningEl = section.querySelector('.reasoning');
         const actionEl = section.querySelector('.action');
         if (reasoningEl && actionEl) {
-          reasoningEl.textContent = '';
+          reasoningEl.textContent = 'Reasoning: ';
           actionEl.textContent = '';
           typeText(reasoningEl, reasoning, () => {
             actionEl.textContent = action;

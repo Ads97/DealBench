@@ -85,11 +85,17 @@ def game_data():
     if isinstance(data.get("game_history"), list) and data["game_history"]:
         action = data["game_history"][-1]
 
+    metadata = data.get("metadata")
+    if metadata:
+        reasoning = metadata.get("reasoning", "")
+    else:
+        reasoning = ""
+
     return jsonify({
         "action": action,
         "game_state": data.get("game_state", {}),
         "winner": data.get("winner"),
-        "reasoning": data.get("metadata", {}).get("reasoning", "")
+        "reasoning": reasoning
     })
 
 

@@ -29,6 +29,10 @@ function renderCardText(card) {
   return card.name;
 }
 
+function playerId(name) {
+  return 'player-' + name.replace(/[^a-zA-Z0-9_-]/g, '_');
+}
+
 function renderGame(gameState) {
   const board = document.getElementById('game-board');
   board.innerHTML = '';
@@ -36,6 +40,7 @@ function renderGame(gameState) {
   gameState.players.forEach(player => {
     const section = document.createElement('div');
     section.className = 'player';
+    section.id = playerId(player.name);
 
     const title = document.createElement('h2');
     if (player.name === gameState.current_player_name) {
@@ -63,6 +68,14 @@ function renderGame(gameState) {
     const handCards = player.hand_cards.map(renderCardText).join(' ');
     handLine.textContent = `Hand 🃏: ${handCards}`;
     section.appendChild(handLine);
+
+    const reasoningLine = document.createElement('div');
+    reasoningLine.className = 'reasoning';
+    section.appendChild(reasoningLine);
+
+    const actionLine = document.createElement('div');
+    actionLine.className = 'action';
+    section.appendChild(actionLine);
 
     board.appendChild(section);
   });
@@ -105,28 +118,62 @@ function announceWinner(winner) {
   }
 }
 
-function loadGameData() {
-  fetch('/game_data')
-    .then(resp => resp.json())
-    .then(data => {
-      if (data.game_state) {
-        renderGame(data.game_state);
-      }
-      if (data.winner) {
-        announceWinner(data.winner);
-      }
-    })
-    .catch(() => {
-      if (typeof gameData !== 'undefined' && gameData.game_state) {
-        renderGame(gameData.game_state);
-        if (gameData.winner) {
-          announceWinner(gameData.winner);
+function typeText(el, text, cb) {
+  const speed = 40; // ms per character
+  let idx = 0;
+  function type() {
+    if (idx < text.length) {
+      el.textContent += text.charAt(idx++);
+      setTimeout(type, speed);
+    } else if (cb) {
+      cb();
+    }
+  }
+  type();
+}
+
+async function loadGameData() {
+  try {
+    const resp = await fetch('/game_data');
+    const data = await resp.json();
+    if (data.game_state) {
+      renderGame(data.game_state);
+    }
+    if (data.winner) {
+      announceWinner(data.winner);
+    }
+
+    const playerName = data.game_state?.current_player_name;
+    const reasoning = data.reasoning || '';
+    const action = data.action || '';
+    if (playerName) {
+      const section = document.getElementById(playerId(playerName));
+      if (section) {
+        const reasoningEl = section.querySelector('.reasoning');
+        const actionEl = section.querySelector('.action');
+        if (reasoningEl && actionEl) {
+          reasoningEl.textContent = '';
+          actionEl.textContent = '';
+          typeText(reasoningEl, reasoning, () => {
+            actionEl.textContent = action;
+            setTimeout(loadGameData, 2000);
+          });
+          return;
         }
       }
-    });
+    }
+    setTimeout(loadGameData, 2000);
+  } catch (err) {
+    if (typeof gameData !== 'undefined' && gameData.game_state) {
+      renderGame(gameData.game_state);
+      if (gameData.winner) {
+        announceWinner(gameData.winner);
+      }
+    }
+    setTimeout(loadGameData, 2000);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   loadGameData();
-  setInterval(loadGameData, 2000);
 });

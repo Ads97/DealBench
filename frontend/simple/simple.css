@@ -32,3 +32,13 @@ body { font-family: Arial, sans-serif; padding: 20px; }
   pointer-events: none;
   z-index: 1100;
 }
+
+.reasoning {
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.action {
+  margin-top: 5px;
+  font-weight: bold;
+}

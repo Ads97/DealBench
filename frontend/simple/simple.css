@@ -1,4 +1,5 @@
 body { font-family: Arial, sans-serif; padding: 20px; }
+.title { text-align: center; }
 #game-board {
   display: flex;
   justify-content: space-around;
@@ -12,6 +13,10 @@ body { font-family: Arial, sans-serif; padding: 20px; }
   flex: 1 1 45%;
 }
 .player h2 { margin: 0 0 10px 0; }
+.player-info {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
 
 /* Winner modal styling */
 .modal {
@@ -45,7 +50,7 @@ body { font-family: Arial, sans-serif; padding: 20px; }
 }
 
 .reasoning {
-  margin-top: 5px;
+  margin-top: 10px;
   font-style: italic;
 }
 

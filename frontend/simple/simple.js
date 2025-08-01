@@ -53,11 +53,13 @@ function renderGame(gameState) {
     section.appendChild(title);
 
     const bankLine = document.createElement('div');
+    bankLine.className = 'player-info';
     const bankCards = player.banked_cards.map(renderCardText).join(', ');
     bankLine.textContent = `Bank 🏦: ${bankCards}`;
     section.appendChild(bankLine);
 
     const propLine = document.createElement('div');
+    propLine.className = 'player-info';
     const propSets = Object.values(player.property_sets || {}).map(set => {
       const squares = colorEmoji(set.set_color).repeat(set.cards.length);
       const status = set.is_full_set ? ' - Complete' : ` (${set.cards.length}/${set.number_for_full_set} ${set.set_color})`;
@@ -71,6 +73,7 @@ function renderGame(gameState) {
     section.appendChild(actionsLine);
 
     const handLine = document.createElement('div');
+    handLine.className = 'player-info';
     const handCards = player.hand_cards.map(renderCardText).join(' ');
     handLine.textContent = `Hand 🃏: ${handCards}`;
     section.appendChild(handLine);

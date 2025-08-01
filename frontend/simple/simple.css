@@ -1,5 +1,16 @@
 body { font-family: Arial, sans-serif; padding: 20px; }
-.player { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; }
+#game-board {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.player {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 15px;
+  flex: 1 1 45%;
+}
 .player h2 { margin: 0 0 10px 0; }
 
 /* Winner modal styling */

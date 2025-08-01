@@ -129,18 +129,24 @@ function announceWinner(winner) {
   }
 }
 
-function typeText(el, text, cb) {
+function typeText(el, text) {
   const speed = 5; // ms per character
   let idx = 0;
-  function type() {
-    if (idx < text.length) {
-      el.textContent += text.charAt(idx++);
-      setTimeout(type, speed);
-    } else if (cb) {
-      cb();
+  return new Promise(resolve => {
+    function type() {
+      if (idx < text.length) {
+        el.textContent += text.charAt(idx++);
+        setTimeout(type, speed);
+      } else {
+        resolve();
+      }
     }
-  }
-  type();
+    type();
+  });
+}
+
+function delay(ms) {
+  return new Promise(res => setTimeout(res, ms));
 }
 
 async function loadGameData() {
@@ -156,7 +162,7 @@ async function loadGameData() {
 
     const playerName = data.game_state?.current_player_name;
     const reasoning = data.reasoning || '';
-    const action = "Action: " + data.action || '';
+    const action = data.action ? `Action: ${data.action}` : '';
     if (playerName) {
       const section = document.getElementById(playerId(playerName));
       if (section) {
@@ -165,15 +171,15 @@ async function loadGameData() {
         if (reasoningEl && actionEl) {
           reasoningEl.textContent = 'Reasoning: ';
           actionEl.textContent = '';
-          typeText(reasoningEl, reasoning, () => {
-            actionEl.textContent = action;
-            setTimeout(loadGameData, 2000);
-          });
-          return;
+          await typeText(reasoningEl, reasoning);
+          actionEl.textContent = action;
+          await delay(2000);
+          return loadGameData();
         }
       }
     }
-    setTimeout(loadGameData, 2000);
+    await delay(2000);
+    return loadGameData();
   } catch (err) {
     if (typeof gameData !== 'undefined' && gameData.game_state) {
       renderGame(gameData.game_state);
@@ -181,7 +187,8 @@ async function loadGameData() {
         announceWinner(gameData.winner);
       }
     }
-    setTimeout(loadGameData, 2000);
+    await delay(2000);
+    return loadGameData();
   }
 }
 

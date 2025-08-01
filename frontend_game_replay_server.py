@@ -8,9 +8,8 @@ from flask import Flask, jsonify
 import json
 import os
 import glob
-import threading
-import time
 import re
+from threading import Lock
 
 # Tell Flask where the frontend lives and expose it at the root URL ("/")
 app = Flask(__name__, static_folder="frontend/simple", static_url_path="")
@@ -50,24 +49,25 @@ def _get_json_files():
     return files
 
 
-def update_data_loop():
-    """Background loop to load a new file every two seconds."""
-    files = _get_json_files()
-    idx = 0
-    while True:
-        if idx < len(files):
-            try:
-                with open(files[idx], "r") as f:
-                    data = json.load(f)
-                latest_data.clear()
-                latest_data.update(data)
-                idx += 1
-            except Exception as exc:
-                print(f"Failed reading {files[idx]}: {exc}")
-        time.sleep(2)
+files = []
+idx = 0
+idx_lock = Lock()
 
 
-threading.Thread(target=update_data_loop, daemon=True).start()
+def load_next_data():
+    """Load the next log file on demand."""
+    global files, idx
+    if not files:
+        files = _get_json_files()
+    if idx < len(files):
+        try:
+            with open(files[idx], "r") as f:
+                data = json.load(f)
+            latest_data.clear()
+            latest_data.update(data)
+            idx += 1
+        except Exception as exc:
+            print(f"Failed reading {files[idx]}: {exc}")
 
 
 @app.route("/")
@@ -79,6 +79,8 @@ def index():
 @app.route("/game_data")
 def game_data():
     """Return the most recently loaded game data."""
+    with idx_lock:
+        load_next_data()
     data = latest_data or {}
 
     action = ""

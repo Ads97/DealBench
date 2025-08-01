@@ -37,6 +37,8 @@ function renderGame(gameState) {
   const board = document.getElementById('game-board');
   board.innerHTML = '';
 
+  const actionsPlayed = gameState.actions_played_in_current_turn || 0;
+
   gameState.players.forEach(player => {
     const section = document.createElement('div');
     section.className = 'player';
@@ -63,6 +65,10 @@ function renderGame(gameState) {
     }).join(' | ');
     propLine.textContent = `Properties 🏠: ${propSets}`;
     section.appendChild(propLine);
+
+    const actionsLine = document.createElement('div');
+    actionsLine.textContent = `Actions played this turn: ${actionsPlayed}`;
+    section.appendChild(actionsLine);
 
     const handLine = document.createElement('div');
     const handCards = player.hand_cards.map(renderCardText).join(' ');

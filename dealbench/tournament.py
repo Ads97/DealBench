@@ -76,7 +76,6 @@ class Tournament:
             for i in range(len(self.players))
             for j in range(i + 1, len(self.players))
         ]
-
         limiter = trio.CapacityLimiter(self.num_concurrent_games)
 
         # take a slot; other matches wait here if we’re at capacity
@@ -86,8 +85,6 @@ class Tournament:
 
         async with trio.open_nursery() as nursery:
             for a, b in matches:
-                if not self.check_players(a,b, ["openai", "Randy"]):
-                    continue
                 nursery.start_soon(run_match, a, b)
 
         self.save_results()

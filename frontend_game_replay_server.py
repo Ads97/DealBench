@@ -13,11 +13,11 @@ import time
 import re
 
 # Tell Flask where the frontend lives and expose it at the root URL ("/")
-app = Flask(__name__, static_folder="frontend", static_url_path="")
+app = Flask(__name__, static_folder="frontend/simple", static_url_path="")
 
 # Directory containing sequential game state JSON files.
 # Can be overridden with the LOG_DIR environment variable.
-LOG_DIR = os.environ.get("LOG_DIR", "logs/2025-07-24_06-41-55_openai_o3_google_gemini-2.5-pro_game")
+LOG_DIR = os.environ.get("LOG_DIR", "logs/2025-08-01_07-45-03_google_gemini-2.5-pro_openai_o3_game")
 
 # Shared dictionary that always holds the latest loaded data.
 latest_data = {}
@@ -73,7 +73,7 @@ threading.Thread(target=update_data_loop, daemon=True).start()
 @app.route("/")
 def index():
     """Serve the main HTML page."""
-    return app.send_static_file("index.html")
+    return app.send_static_file("simple.html")
 
 
 @app.route("/game_data")

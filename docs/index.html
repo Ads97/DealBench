@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>DealBench | LLM Monopoly Deal Arena</title>
+  <title>DealBench</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     /* Basic Reset */
@@ -43,8 +43,8 @@
   </header>
 
   <section class="hero">
-    <h1>LLMs Play Monopoly Deal<sup>*</sup></h1>
-    <p>Testing strategy and improvisation in frontier models through gameplay.</p>
+    <h1>LLMs make Deals</h1>
+    <p>Testing frontier LLMs in a game similar to Monopoly Deal<sup>*</sup>.</p>
     <!-- <p><span style="font-size: 0.7em; color: #666;">Open-source research preview, non-commercial use only</span></p> -->
     <a class="btn" href="https://github.com/Ads97/DealBench">Github</a>
   </section>
@@ -75,32 +75,49 @@
 
   <section id="about" style="padding:0 2rem 4rem;max-width:720px;margin:0 auto;">
     <h2 class="section-title" style="margin-top:0;">About DealBench</h2>
-    <p>DealBench is an AI evaluation research benchmark that pits large language models against each other in simulated games of <em>Monopoly&nbsp;Deal</em>. Monopoly Deal can have large swings in momentum, therefore winning requires models to plan carefully and have the situational awareness to adapt. This long term planning with adjustments is a good simulation of the real world, and is a unique challenge compared to other long term planning benchmarks such as SWE-bench or Web-Arena.</p>
+    <p>DealBench is an AI evaluation benchmark that pits large language models against each other in Monopoly&nbsp;Deal-style card games. 
+    
+    <hr style="border:0;border-top:1px solid #ddd;margin:2rem 0;">
+
+    <h3>Why a game like Monopoly Deal<sup>*</sup>?</h3>
+    A game like Deal tests long term strategy as well as improvisation ability in players. Deal often has large swings in player momentum between user turns. Therefore, winning requires models to plan carefully and have the situational awareness to adapt. This long term planning with adjustments is a good simulation of the real world, and is a unique challenge compared to static long term planning benchmarks such as SWE-bench or Web-Arena. Games in general are also more robust to overfitting due to the large number of possible rollouts.</p>
 
     <hr style="border:0;border-top:1px solid #ddd;margin:2rem 0;">
 
     <h3>Key Observations</h3>
-    <p>claude made a lot of incorrect moves, doesnt support structured outputs. As an example, it kept trying to collect rent using the opponent's properties, instead of its own. Open source models like deepseek-r1, qwen3-235b did not understand the output enough to be able to play. Qwen thought for 17k tokens on the first turn before errorring out. Format consistency is also a problem. Deepseek stops emitting reasoning if structured outputs is enabled. Performance better than the random move bot shows that just the ability to play valid moves is not enough to win</p>
+    <ol>
+      <li><b>Claude Sonnet 4</b>'s low performance is primarily because it makes a lot of incorrect moves - for example, it kept trying to collect rent using the opponent's properties, instead of its own. Anthropic's lack of support for enforced structured outputs might also be hurting its performance. </li>
+      <li>Open source models like <b>Deepseek-r1</b> and <b>Qwen3-235b</b> also struggled with the rules and output format. Deepseek stops emitting reasoning if structured outputs is enabled - resulting in poor quality valid moves. </li>
+      <li><b>Qwen3</b> thought for <b>17k tokens</b> (!) on the first turn before erroring out. In general, extremely long reasoning traces made the model quite slow and difficult to use reliably</li>
+      <li>All the models use a really <b>large number of turns (15-30)</b> to win. A standard game between humans would conclude within 10 turns. This might indicate that the models are far from human level of play (future work)</li>
+    </ol>
 
     <hr style="border:0;border-top:1px solid #ddd;margin:2rem 0;">
 
     <h3>Method</h3>
-    <p>all games are 2 player matches. in each turn, the LLM can play up to 3 actions (each action is one prompt-response pair). the LLM is provided with the rules in the system prompt. Its also provided with the game history (list of actions done so far), current game state, its hand+properties+bank cards, as well as the opponent's property+bank cards in the user prompt. Its also provided with an example of the output format for every action it can do. All responses are expected to be JSON.</p>
-    <p>All LLM actions are rigorously validated using game rules. If the LLM breaks a rule in its action, it can try again. 3 retries are allowed before the LLM's turn is skipped due to a lack of valid moves<br>If the LLM has a just say no card in its hand, it is asked if it would like to use it whenever the opponent takes an action against it<br>In case the LLM has more than 7 cards in hand at the end of its turn, it is asked to choose which cards it would like to discard<br>When paying money for rent (or any other purpose), the LLM can choose which money/property cards to use</p>
+    <ul>
+      <li>All games are 2 player matches. In each turn, the LLM can play up to 3 actions. Each action is one prompt-response pair.</li>
+      <li>The LLM is provided with the rules in the system prompt. Its also provided with the game history (list of actions done so far), current game state, its hand+properties+bank cards, as well as the opponent's property+bank cards in the user prompt. Its also provided with an example of the output format for every action it can do. All responses are expected to be JSON.</li>
+      <li>All LLM actions are rigorously validated using game rules. If the LLM breaks a rule, it can try again. 3 retries are allowed before the LLM's turn is skipped due to a lack of valid moves</li>
+      <li>If the LLM has a just say no card in its hand, it is asked if it would like to use it whenever an opponent takes an action against it</li>
+      <li>In case the LLM has more than 7 cards in hand at the end of its turn, it is asked to choose which cards it would like to discard</li>
+      <li>When paying money for rent (or any other purpose), the LLM can choose which money/property cards to use</li>
+    </ul>
 
     <hr style="border:0;border-top:1px solid #ddd;margin:2rem 0;">
 
     <h3>Future Work</h3>
     <ul>
-      <li>a performance vs cost analysis of models</li>
-      <li>ability for humans to play against models</li>
+      <li>Humans vs LLMs</li>
+      <li>Multiplayer (> 2) testing</li>
     </ul>
 
     <hr style="border:0;border-top:1px solid #ddd;margin:2rem 0;">
 
     <h3>Example prompt</h3>
-    <p>Example prompt goes here.</p>
+    <p>You can find an example prompt in the <a href="https://github.com/Ads97/DealBench">Github Repo</a>.</p>
 
+    <hr style="border:0;border-top:1px solid #ddd;margin:2rem 0;">
     <sub>*This project implements a simulation based on the publicly known rules of Monopoly Deal. Monopoly Deal and Monopoly are registered trademarks of Hasbro, Inc. This project is not affiliated with, endorsed by, or associated with Hasbro in any way.</sub>
   </section>
 
@@ -127,7 +144,7 @@
           <td>#${row.rank}</td>
           <td>${row.model}</td>
           <td>${row.provider}</td>
-          <td>${row.wins}/${row.losses}/${row.games}</td>
+          <td>${row.wins}/${row.losses}</td>
           <td>${row.elo}</td>
         `;
         tbody.appendChild(tr);

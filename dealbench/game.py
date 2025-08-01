@@ -58,7 +58,7 @@ class Game:
             logger.info(message)
         self.game_history.append(message)
     
-    def save_game(self, file_name: str = "result.json"):
+    def save_game(self, file_name: str = "result.json", metadata: Optional[Dict[str, Any]] = None):
         """Save the current game state.
 
         Args:
@@ -70,6 +70,7 @@ class Game:
             "players": [p.to_json(debug=True) for p in self.players],
             "game_history": self.game_history,
             "game_state": self.to_json(debug=True),
+            "metadata": metadata
         }
         os.makedirs(f"logs/{self.game_identifier}", exist_ok=True)
         with open(f"logs/{self.game_identifier}/{file_name}", "w") as f:
@@ -121,7 +122,7 @@ class Game:
                 if error_reason:
                     logger.info(f"Invalid action chosen: {error_reason}. Trying again.")
                 try:
-                    action = player.get_action(self.to_json(), self.game_history)
+                    action, metadata = player.get_action(self.to_json(), self.game_history)
                     target_players = [self._get_player_by_name(n) for n in action.target_player_names]
                     valid, error_reason = self.rules_engine.validate_action(action, player, target_players, self.actions_played)
                     attempts += 1
@@ -137,7 +138,7 @@ class Game:
             if action.action_type == ActionType.PASS:  # Player chose to end turn
                 self.add_to_game_history(f"{player.name} has chosen to end their action phase.")
                 # Save when a player passes
-                self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json")
+                self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json", metadata)
                 break
 
             # now execute action
@@ -150,7 +151,7 @@ class Game:
                 logger.info(f"Could not execute action: {action}")
 
             # Save state after each valid action
-            self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json")
+            self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json", metadata)
 
             has_won = self.rules_engine.check_win_condition(player)
             if has_won:

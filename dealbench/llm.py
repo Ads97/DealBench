@@ -2,7 +2,7 @@ import os
 import json
 import re
 import requests
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 from dealbench.player import Player
@@ -41,7 +41,8 @@ class LLMHandler():
             reasoning = response['choices'][0]['message']['reasoning']
         logger.info(f"=== LLM REASONING === \n{reasoning}\n===END LLM REASONING===")
         logger.info(f"=== LLM OUTPUT === \n{text}\n===END LLM OUTPUT===")
-        return json.loads(text)
+        metadata = {"reasoning": reasoning}
+        return json.loads(text), metadata
         # return response
 
     def _render_template(self, template_name: str, **kwargs) -> str:
@@ -216,7 +217,7 @@ class LLMHandler():
                 }
         return json_template
 
-    def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Dict[str, Any]:
+    def call_llm(self, template_name: str, response_format: str, **template_kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """Call the LLM with a rendered template."""
         prompt = self._render_template(template_name, **template_kwargs)
         logger.info(f"===PROMPT=== {template_name} {self.model_name} \n{prompt}\n===END PROMPT===")
@@ -365,7 +366,7 @@ class LLMPlayer(Player, LLMHandler):
     
     def get_action(self, game_state_dict: dict, game_history: List[str]) -> Optional[Action]:
         """Get the next action from the LLM."""
-        response = self.call_llm(
+        response, metadata = self.call_llm(
             'get_action_prompt.j2',
             response_format="action",
             player=self,
@@ -379,11 +380,11 @@ class LLMPlayer(Player, LLMHandler):
         if 'action_type' not in response:
             raise ValueError("LLM response missing 'action_type'")
 
-        return self.convert_json_to_action(response)
+        return self.convert_json_to_action(response), metadata
 
     def choose_cards_to_discard(self, num_cards_to_discard: int, game_state_dict: dict, game_history: List[str]) -> List[Card]:
         """Choose cards to discard using the LLM."""
-        response = self.call_llm(
+        response, _ = self.call_llm(
             'choose_cards_to_discard_prompt.j2',
             response_format="discard",
             player=self,
@@ -408,7 +409,7 @@ class LLMPlayer(Player, LLMHandler):
     def provide_payment(self, reason: str, amount: int, game_state_dict: dict, game_history: List[str]) -> List:
         """Provide payment using the LLM to choose which cards to use, returning (Card, source) tuples."""
         try:
-            response = self.call_llm(
+            response, _ = self.call_llm(
                 'provide_payment_prompt.j2',
                 response_format="payment",
                 player=self,
@@ -458,7 +459,7 @@ class LLMPlayer(Player, LLMHandler):
             return None
             
         try:
-            response = self.call_llm(
+            response, _ = self.call_llm(
                 'wants_to_negate_prompt.j2',
                 response_format="negate",
                 player=self,

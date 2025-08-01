@@ -2,7 +2,7 @@
 1. Serves the static frontend (index.html, index.js, styles.css) from the `frontend/` folder.
 2. Exposes `/game_data` that returns example Monopoly Deal game data consumed by `index.js`.
 
-Run with `python server.py` (Python 3.9+) and visit http://localhost:5000
+Run with `python frontend_game_replay_server.py` (Python 3.9+) and visit http://localhost:5000
 """
 from flask import Flask, jsonify
 import json
@@ -89,6 +89,7 @@ def game_data():
         "action": action,
         "game_state": data.get("game_state", {}),
         "winner": data.get("winner"),
+        "reasoning": data.get("metadata", {}).get("reasoning", "")
     })
 
 

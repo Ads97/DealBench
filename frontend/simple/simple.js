@@ -87,7 +87,12 @@ function launchConfetti() {
   }
 }
 
+
+let winnerAnnounced = false;
+
 function announceWinner(winner) {
+  if (winnerAnnounced) return;
+  winnerAnnounced = true;
   const modal = document.getElementById('winner-modal');
   const message = document.getElementById('winner-message');
   if (modal && message) {
@@ -100,11 +105,28 @@ function announceWinner(winner) {
   }
 }
 
+function loadGameData() {
+  fetch('/game_data')
+    .then(resp => resp.json())
+    .then(data => {
+      if (data.game_state) {
+        renderGame(data.game_state);
+      }
+      if (data.winner) {
+        announceWinner(data.winner);
+      }
+    })
+    .catch(() => {
+      if (typeof gameData !== 'undefined' && gameData.game_state) {
+        renderGame(gameData.game_state);
+        if (gameData.winner) {
+          announceWinner(gameData.winner);
+        }
+      }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  if (typeof gameData !== 'undefined' && gameData.game_state) {
-    renderGame(gameData.game_state);
-    if (gameData.winner) {
-      announceWinner(gameData.winner);
-    }
-  }
+  loadGameData();
+  setInterval(loadGameData, 2000);
 });

@@ -15,19 +15,21 @@ function colorEmoji(color) {
   return map[color] || '';
 }
 
-function renderCardText(card) {
+function renderCardText(card, { inHand = false } = {}) {
   if (card.type && card.type.includes('MONEY')) {
     return `💰$${card.value}M`;
   }
   if (card.type && card.type.includes('PROPERTY')) {
     const emoji = colorEmoji(card.set_color || card.current_color);
-    return `${emoji}`;
+    const name = card.name || '';
+    return inHand ? `${emoji}${name}` : `${emoji}`;
   }
   if (card.type && card.type.includes('ACTION')) {
     return `🎴${card.name}`;
   }
   return card.name;
 }
+
 
 function playerId(name) {
   return 'player-' + name.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -37,7 +39,7 @@ function renderGame(gameState) {
   const board = document.getElementById('game-board');
   board.innerHTML = '';
 
-  const actionsPlayed = gameState.actions_played_in_current_turn - 1 || 0;
+  const actionsPlayed = gameState.actions_played_in_current_turn || 0;
 
   gameState.players.forEach(player => {
     const section = document.createElement('div');
@@ -62,7 +64,14 @@ function renderGame(gameState) {
     propLine.className = 'player-info';
     const propSets = Object.values(player.property_sets || {}).map(set => {
       const squares = colorEmoji(set.set_color).repeat(set.cards.length);
-      const status = set.is_full_set ? ' - Complete' : ` (${set.cards.length}/${set.number_for_full_set} ${set.set_color})`;
+      let status;
+      if (set.is_full_set) {
+        status = ' - Complete';
+      } else if (set.number_for_full_set === 0) {
+        status = ` (${set.cards.length})`;
+      } else {
+        status = ` (${set.cards.length}/${set.number_for_full_set} ${set.set_color})`;
+      }
       return `${squares}${status}`;
     }).join(' | ');
     propLine.textContent = `Properties 🏠: ${propSets}`;
@@ -70,7 +79,9 @@ function renderGame(gameState) {
 
     const handLine = document.createElement('div');
     handLine.className = 'player-info';
-    const handCards = player.hand_cards.map(renderCardText).join(' ');
+    const handCards = player.hand_cards
+    .map(card => renderCardText(card, { inHand: true }))
+    .join(' ');
     handLine.textContent = `Hand 🃏: ${handCards}`;
     section.appendChild(handLine);
 

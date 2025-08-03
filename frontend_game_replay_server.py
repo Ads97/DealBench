@@ -16,7 +16,7 @@ app = Flask(__name__, static_folder="frontend/simple", static_url_path="")
 
 # Directory containing sequential game state JSON files.
 # Can be overridden with the LOG_DIR environment variable.
-LOG_DIR = os.environ.get("LOG_DIR", "logs/2025-08-01_07-45-03_google_gemini-2.5-pro_openai_o3_game")
+LOG_DIR = os.environ.get("LOG_DIR", "logs/2025-08-02_18-40-18_random_1_random_2_game")
 
 # Shared dictionary that always holds the latest loaded data.
 latest_data = {}
@@ -45,8 +45,11 @@ def _get_json_files():
     result_path = os.path.join(LOG_DIR, "result.json")
     if os.path.exists(result_path):
         files.append(result_path)
+    
+    filtered_files = files[-14:]
+            
 
-    return files
+    return filtered_files
 
 
 files = []
@@ -60,14 +63,15 @@ def load_next_data():
     if not files:
         files = _get_json_files()
     if idx < len(files):
-        try:
-            with open(files[idx], "r") as f:
-                data = json.load(f)
-            latest_data.clear()
-            latest_data.update(data)
-            idx += 1
-        except Exception as exc:
-            print(f"Failed reading {files[idx]}: {exc}")
+        with open(files[idx], "r") as f:
+            print(files[idx])
+            data = json.load(f)
+        latest_data.clear()
+        latest_data.update(data)
+
+                
+
+        idx += 1
 
 
 @app.route("/")
@@ -83,9 +87,7 @@ def game_data():
         load_next_data()
     data = latest_data or {}
 
-    action = ""
-    if isinstance(data.get("game_history"), list) and data["game_history"]:
-        action = data["game_history"][-1]
+    action = data["action"]
 
     metadata = data.get("metadata")
     if metadata:

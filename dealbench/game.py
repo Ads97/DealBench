@@ -58,7 +58,7 @@ class Game:
             logger.info(message)
         self.game_history.append(message)
     
-    def save_game(self, file_name: str = "result.json", metadata: Optional[Dict[str, Any]] = None):
+    def save_game(self, file_name: str = "result.json", action: Optional[Action] = None, metadata: Optional[Dict[str, Any]] = None):
         """Save the current game state.
 
         Args:
@@ -70,7 +70,8 @@ class Game:
             "players": [p.to_json(debug=True) for p in self.players],
             "game_history": self.game_history,
             "game_state": self.to_json(debug=True),
-            "metadata": metadata
+            "metadata": metadata,
+            "action": action.human_readable() if action else None
         }
         os.makedirs(f"logs/{self.game_identifier}", exist_ok=True)
         with open(f"logs/{self.game_identifier}/{file_name}", "w") as f:
@@ -138,9 +139,12 @@ class Game:
             if action.action_type == ActionType.PASS:  # Player chose to end turn
                 self.add_to_game_history(f"{player.name} has chosen to end their action phase.")
                 # Save when a player passes
-                self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json", metadata)
+                self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json", action, metadata)
                 break
 
+            # Save state after each valid action
+            self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json", action, metadata)
+            
             # now execute action
             successfully_executed = self.execute(action)
             if action.action_type != ActionType.MOVE_PROPERTY:
@@ -150,8 +154,6 @@ class Game:
             else:
                 logger.info(f"Could not execute action: {action}")
 
-            # Save state after each valid action
-            self.save_game(f"turn-{self.turn_count}_actions-{self.actions_played}.json", metadata)
 
             has_won = self.rules_engine.check_win_condition(player)
             if has_won:
@@ -593,10 +595,10 @@ class TestPlayer(Player):
         # Choose and return one action (or PASS if none are legal)
         # ------------------------------------------------------------------------
         if valid_actions:
-            return random.choice(valid_actions)
+            return random.choice(valid_actions), None
 
         # TODO: Test move property action
-        return Action(source_player=self, action_type=ActionType.PASS)
+        return Action(source_player=self, action_type=ActionType.PASS), None
     
     
     def choose_cards_to_discard(self, num_cards_to_discard, game_state_dict, game_history: List[str]) -> List[Card]:

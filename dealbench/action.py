@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import List, Optional
-from dealbench.card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor
+from dealbench.card import BuildingCard, Card, PropertyCard, WildPropertyCard, PropertyColor, CardType
 from dataclasses import dataclass
 from enum import Enum, auto
+from dealbench.deck_config import BIRTHDAY_GIFT_AMOUNT, DEBT_COLLECTOR_AMOUNT
 
 class ActionType(Enum):
     ADD_TO_PROPERTIES = auto()         # Placing property on table
@@ -85,3 +86,39 @@ class Action:
             components.append(f"forced_or_sly_deal_target_property_info={self.forced_or_sly_deal_target_property_info}")
 
         return f"<{', '.join(components)}>"
+    
+    def human_readable(self) -> str:
+        match self.action_type:
+            case ActionType.ADD_TO_PROPERTIES:
+                return f"{self.source_player.name} placed {self.card.name} on {self.target_property_set.name} set."
+            case ActionType.ADD_TO_BANK:
+                return f"{self.source_player.name} added {self.card.name} to bank."
+            case ActionType.PLAY_ACTION:
+                match self.card.get_card_type():
+                    case CardType.ACTION_JUST_SAY_NO:
+                        return f"{self.source_player.name} played Just Say No!"
+                    case CardType.ACTION_PASS_GO:
+                        return f"{self.source_player.name} played Pass Go! Gets 2 more cards"
+                    case CardType.ACTION_BIRTHDAY:
+                        return f"{self.source_player.name} played Birthday! Other players owe him ${BIRTHDAY_GIFT_AMOUNT}M"
+                    case CardType.ACTION_DEBT_COLLECTOR:
+                        return f"{self.source_player.name} played Debt Collector! {self.target_player_names[0]} owes them ${DEBT_COLLECTOR_AMOUNT}M"
+                    case CardType.ACTION_DEAL_BREAKER:
+                        return f"{self.source_player.name} played Deal Breaker and stole {self.target_property_set.value} from {self.target_player_names[0]}"
+                    case CardType.ACTION_SLY_DEAL:
+                        return f"{self.source_player.name} played Sly Deal and stole {self.forced_or_sly_deal_target_property_info.name} from {self.target_player_names[0]}"
+                    case CardType.ACTION_FORCED_DEAL:
+                        return f"{self.source_player.name} played Forced Deal and traded {self.forced_deal_source_property_info.name} for {self.forced_or_sly_deal_target_property_info.name}"
+                    case CardType.ACTION_BUILDING:
+                        return f"{self.source_player.name} played {self.card.name} on {self.target_property_set.name} set."
+                    case CardType.ACTION_RENT:
+                        return f"{self.source_player.name} played Rent ({self.rent_color.name})."
+                    case _:
+                        raise ValueError(f"Unexpected card type: {self.card.get_card_type()}")
+            case ActionType.MOVE_PROPERTY:
+                return f"{self.source_player.name} moved {self.card.name} to {self.target_property_set.name} set."
+            case ActionType.PASS:
+                return f"{self.source_player.name} passed their turn."
+            case _:
+                raise ValueError(f"Unexpected action type: {self.action_type}")
+                

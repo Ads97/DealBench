@@ -1,4 +1,7 @@
 # Deal Bench - An AI Research Benchmark inspired by Monopoly Deal\*
+
+https://github.com/Ads97/AgentDeal/raw/main/docs/DealBenchGame.mp4
+
 LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a simulated game inspired by Monopoly Deal\*. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. A vanilla html/css/javascript frontend displays recent match replays.
 
 ## Project Overview 

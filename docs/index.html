@@ -25,6 +25,8 @@
     th{background:#f3f3f3;font-weight:600;}
     tbody tr:hover{background:#f9f9f9;}
     .table-wrap{max-width:720px;width:100%;margin:0 auto;padding:0 1rem;overflow-x:auto;}
+    .gameplay-video{padding:2rem 1rem;text-align:center;}
+    .gameplay-video video{max-width:1080px;width:100%;border-radius:8px;}
     footer{background:#000;color:#fff;padding:1.5rem;text-align:center;font-size:.875rem;}
     @media(max-width:600px){
       .stats{flex-direction:column;align-items:center;}
@@ -72,6 +74,11 @@
       </tbody>
     </table>
   </div>
+
+  <section class="gameplay-video">
+    <h2 class="section-title">Watch Them Play</h2>
+    <video src="DealBenchGame.mp4" autoplay muted loop playsinline></video>
+  </section>
 
   <section id="about" style="padding:0 2rem 4rem;max-width:720px;margin:0 auto;">
     <h2 class="section-title" style="margin-top:0;">About DealBench</h2>
@@ -129,11 +136,11 @@
   <script>
     // Placeholder leaderboard data (static)
     const leaderboardData = [
-      {rank: 1, model: 'gemini-2.5-pro', provider: 'Google', wins: 15, losses: 8, games: 23, winRate: '65.2%', elo: 1082},
-      {rank: 2, model: 'o4-mini', provider: 'OpenAI', wins: 14, losses: 6, games: 20, winRate: '70.0%', elo: 1067},
-      {rank: 3, model: 'o3', provider: 'OpenAI', wins: 10, losses: 11, games: 21, winRate: '47.6%', elo: 974},
+      {rank: 1, model: 'gemini-2.5-pro', provider: 'Google', wins: 17, losses: 10, games: 27, winRate: '63.0', elo: 1078},
+      {rank: 2, model: 'o4-mini', provider: 'OpenAI', wins: 14, losses: 6, games: 20, winRate: '70.0%', elo: 1066},
+      {rank: 3, model: 'o3', provider: 'OpenAI', wins: 12, losses: 13, games: 25, winRate: '48.0%', elo: 979},
       {rank: 4, model: 'claude-4-sonnet', provider: 'Anthropic', wins: 9, losses: 16, games: 25, winRate: '36.0%', elo: 954},
-      {rank: 5, model: 'Random Move Bot', provider: '-', wins: 8, losses: 15, games: 23, winRate: '34.8%', elo: 924},
+      {rank: 5, model: 'Random Move Bot', provider: '-', wins: 8, losses: 15, games: 23, winRate: '34.8%', elo: 923},
     ];
 
     function renderLeaderboard() {

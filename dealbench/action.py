@@ -104,7 +104,7 @@ class Action:
                     case CardType.ACTION_DEBT_COLLECTOR:
                         return f"{self.source_player.name} played Debt Collector! {self.target_player_names[0]} owes them ${DEBT_COLLECTOR_AMOUNT}M"
                     case CardType.ACTION_DEAL_BREAKER:
-                        return f"{self.source_player.name} played Deal Breaker and stole {self.target_property_set.value} from {self.target_player_names[0]}"
+                        return f"{self.source_player.name} played Deal Breaker and stole {self.target_property_set.name} from {self.target_player_names[0]}"
                     case CardType.ACTION_SLY_DEAL:
                         return f"{self.source_player.name} played Sly Deal and stole {self.forced_or_sly_deal_target_property_info.name} from {self.target_player_names[0]}"
                     case CardType.ACTION_FORCED_DEAL:

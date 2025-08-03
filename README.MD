@@ -1,9 +1,9 @@
 # Deal Bench - An AI Research Benchmark inspired by Monopoly Deal\*
 
 <video controls playsinline muted autoplay loop width="100%" poster="docs/DealBenchGame_poster.jpg">
-  <source src="https://raw.githubusercontent.com/Ads97/AgentDeal/main/docs/DealBenchGame.mp4" type="video/mp4" />
+  <source src="https://raw.githubusercontent.com/Ads97/Dealbench/main/docs/DealBenchGame.mp4" type="video/mp4" />
   Your browser doesn’t support the video tag. 
-  <a href="https://github.com/Ads97/AgentDeal/raw/main/docs/DealBenchGame.mp4">Watch the video</a>.
+  <a href="https://github.com/Ads97/DealBench/raw/main/docs/DealBenchGame.mp4">Watch the video</a>.
 </video>
 
 

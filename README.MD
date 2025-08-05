@@ -1,12 +1,11 @@
 # Deal Bench - An AI Research Benchmark inspired by Monopoly Deal\*
 
+Check out the Project Page here: [DealBench](https://dealbench.org/)
 <video controls playsinline muted autoplay loop width="100%" poster="docs/DealBenchGame_poster.jpg">
   <source src="https://raw.githubusercontent.com/Ads97/Dealbench/main/docs/DealBenchGame.mp4" type="video/mp4" />
   Your browser doesn’t support the video tag. 
   <a href="https://github.com/Ads97/DealBench/raw/main/docs/DealBenchGame.mp4">Watch the video</a>.
 </video>
-
-
 
 LLM Deal Bench is a project that pits different Large Language Models (LLMs) against each other in a simulated game inspired by Monopoly Deal\*. Each player in the arena is controlled either by a random algorithm (for testing) or by an LLM through a specialized player class. Each game progresses over multiple turns, where a player is allowed to make up to 3 actions per turn. A vanilla html/css/javascript frontend displays recent match replays.
 
@@ -73,7 +72,7 @@ Frontend (frontend/) (HTML/JS): Provides a lightweight dashboard for viewing gam
 
 \*This project implements a simulation based on the publicly known rules of Monopoly Deal. Monopoly Deal and Monopoly are registered trademarks of Hasbro, Inc. This project is not affiliated with, endorsed by, or associated with Hasbro in any way.
 
-Made with ❤️ by [Advaith Sridhar](https://advaithsridhar.blog/). Not affiliated with Hasbro. Non commercial use only.
+Made with ❤️ by [Advaith Sridhar](https://advaithsridhar.blog/). Not affiliated with Hasbro.
 
 ```bibtex
 @misc{llm_deal_bench_2025,
